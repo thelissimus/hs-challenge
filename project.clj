@@ -9,7 +9,10 @@
                  [com.github.seancorfield/next.jdbc "1.3.883"]
                  [com.zaxxer/HikariCP "5.0.1"]
                  [org.postgresql/postgresql "42.6.0"]
-                 [com.taoensso/timbre "6.2.2"]]
+                 [org.slf4j/slf4j-api "2.0.9"]
+                 [org.slf4j/slf4j-simple "2.0.9"]
+                 [com.taoensso/timbre "6.2.2"]
+                 [cheshire "5.12.0"]]
   :main ^:skip-aot challenge.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all
