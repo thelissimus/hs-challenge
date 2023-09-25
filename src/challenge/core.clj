@@ -11,7 +11,7 @@
                         :host "localhost"
                         :username "postgres"})
 
-(defn -main [& args]
+(defn -main [& _]
   (let [^HikariDataSource ds (->pool HikariDataSource db-spec)]
     (info "Connected to database")
     (info "Running server on http://localhost:8080/")
