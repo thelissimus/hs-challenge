@@ -1,59 +1,69 @@
 (ns challenge.server
   (:gen-class)
-  (:require [next.jdbc.sql :as sql]
+  (:require [next.jdbc :as jdbc]
             [next.jdbc.result-set :refer [as-unqualified-lower-maps]]
-            [compojure.core :refer [GET POST PUT PATCH DELETE context routes]]
+            [next.jdbc.sql :as sql]
+            [compojure.core :refer [GET POST PATCH DELETE context routes]]
             [compojure.middleware :refer [wrap-canonical-redirect]]
-            [cheshire.core :as json]))
+            [cheshire.core :as json]
+            [challenge.domain :as domain]
+            [challenge.lib :refer [conform-let conform-let*]]
+            [clojure.java.io :as io]
+            [clojure.spec.alpha :as s]))
+
+(s/def ::string->int (s/conformer #(try (Integer/parseInt %)
+                                        (catch NumberFormatException _ ::s/invalid))))
 
 (defn patients-get-all [ds]
-  (fn [_] {:status 200
-           :headers {"Content-Type" "application/json"}
-           :body (let [res (sql/query ds
-                                      ["SELECT * FROM patients;"]
-                                      {:builder-fn as-unqualified-lower-maps})]
-                   (json/generate-string {:data res :count (count res)}))}))
+  (fn [_]
+    {:status 200
+     :headers {"Content-Type" "application/json"}
+     :body (let [res (sql/query ds ["SELECT * FROM patients WHERE deleted_at IS NULL;"])]
+             (json/generate-string {:data res :count (count res)}))}))
 
 (defn patients-add [ds]
-  (fn [req] {:status 201
-             :headers {"Content-Type" "application/json"}
-             :body (sql/insert! ds :patients req)}))
+  (fn [patient]
+    {:status 201
+     :headers {"Content-Type" "application/json"}
+     :body (json/generate-string (sql/insert! ds :patients patient))}))
 
 (defn patients-get [ds]
-  (fn [id] {:status 200
-            :headers {"Content-Type" "application/json" "F" "T"}
-            :body (sql/get-by-id ds
-                                 :patients
-                                 (Integer/parseInt id)
-                                 {:builder-fn as-unqualified-lower-maps})}))
-
-(defn patients-update-partial [ds]
-  (fn [id req] {:status 202
-                :headers {"Content-Type" "application/json"}
-                :body (sql/update! ds
-                                   :patients
-                                   req
-                                   {:id (Integer/parseInt id)}
-                                   {:builder-fn as-unqualified-lower-maps})}))
+  (fn [id]
+    (if-let [res (jdbc/execute-one! ds ["SELECT * FROM patients WHERE id = ? AND deleted_at IS NULL;" id])]
+      {:status 200
+       :headers {"Content-Type" "application/json"}
+       :body (json/generate-string res)}
+      {:status 204})))
 
 (defn patients-update [ds]
-  (fn [id req] {:status 202
-                :headers {"Content-Type" "application/json"}
-                :body (sql/update! ds :patients req {:id (Integer/parseInt id)})}))
+  (fn [id patient]
+    {:status 200
+     :headers {"Content-Type" "application/json"}
+     :body (json/generate-string (sql/update! ds :patients patient {:id id}))}))
 
 (defn patients-delete [ds]
-  (fn [id] {:status 200
-            :headers {"Content-Type" "application/json"}
-            :body (sql/delete! ds :patients {:id (Integer/parseInt id)})}))
+  (fn [id]
+    {:status 200
+     :headers {"Content-Type" "application/json"}
+     :body (json/generate-string (sql/delete! ds :patients {:id id}))}))
 
 (defn app [ds]
-  (routes
-   (wrap-canonical-redirect
-    (context "/patients" []
-      (GET  "/" [] (patients-get-all ds))
-      (POST "/" [] (patients-add ds))
-      (context "/:id" [id]
-        (GET    "/" []  ((patients-get ds) id))
-        (PUT    "/" req ((patients-update ds) id req))
-        (PATCH  "/" req ((patients-update-partial ds) id req))
-        (DELETE "/" []  ((patients-delete ds) id)))))))
+  (let [ds (jdbc/with-options ds {:builder-fn as-unqualified-lower-maps})]
+    (routes
+     (wrap-canonical-redirect
+      (context "/patients" []
+        (GET  "/" []  (patients-get-all ds))
+        (POST "/" req (conform-let [pat (s/conform ::domain/patient
+                                                   (-> (:body req)
+                                                       (io/reader :encoding "UTF-8")
+                                                       (json/parse-stream true)))]
+                                   ((patients-add ds) pat)))
+        (context "/:id" [id]
+          (GET    "/" []  (conform-let  [id (s/conform ::string->int id)] ((patients-get ds) id)))
+          (PATCH  "/" req (conform-let* [id (s/conform ::string->int id)
+                                         pat (s/conform ::domain/patient-partial
+                                                        (-> (:body req)
+                                                            (io/reader :encoding "UTF-8")
+                                                            (json/parse-stream true)))]
+                                        ((patients-update ds) id pat)))
+          (DELETE "/" []  (conform-let [id (s/conform ::string->int id)] ((patients-delete ds) id)))))))))
