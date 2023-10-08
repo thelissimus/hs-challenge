@@ -1,12 +1,13 @@
 (ns challenge.domain
   (:require [clojure.spec.alpha :as s]
+            [next.jdbc.types :as types]
             [java-time.api :as time])
   (:import (java.time.format DateTimeParseException)))
 
 (s/def ::first_name (s/and string? #(>= 255 (count %))))
 (s/def ::middle_name (s/and string? #(>= 255 (count %))))
 (s/def ::last_name (s/and string? #(>= 255 (count %))))
-(s/def ::sex #{"male" "female"})
+(s/def ::sex (s/conformer #(if (contains? #{"male" "female"} %) (types/as-other %) ::s/invalid)))
 (s/def ::birth_date (s/conformer #(try (time/local-date-time %)
                                        (catch DateTimeParseException _ ::s/invalid))))
 (s/def ::address string?)
