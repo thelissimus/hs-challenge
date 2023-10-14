@@ -1,4 +1,4 @@
-(ns challenge.server
+(ns challenge.backend.server
   (:gen-class)
   (:require [next.jdbc :as jdbc]
             [next.jdbc.result-set :refer [as-unqualified-lower-maps]]
@@ -6,8 +6,8 @@
             [compojure.core :refer [GET POST PATCH DELETE context routes]]
             [compojure.middleware :refer [wrap-canonical-redirect]]
             [cheshire.core :as json]
-            [challenge.domain :as domain]
-            [challenge.lib :refer [conform-let conform-let*]]
+            [challenge.backend.domain :as domain]
+            [challenge.backend.lib :refer [conform-let conform-let*]]
             [clojure.java.io :as io]
             [clojure.spec.alpha :as s]))
 

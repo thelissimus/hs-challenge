@@ -14,7 +14,7 @@
                  [com.taoensso/timbre "6.2.2"]
                  [clojure.java-time "1.3.0"]
                  [cheshire "5.12.0"]]
-  :main ^:skip-aot challenge.core
+  :main ^:skip-aot challenge.backend.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}})

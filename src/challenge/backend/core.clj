@@ -1,9 +1,9 @@
-(ns challenge.core
+(ns challenge.backend.core
   (:gen-class)
   (:require [next.jdbc.connection :refer [->pool]]
             [org.httpkit.server :refer [run-server]]
             [taoensso.timbre :refer [info]]
-            [challenge.server :refer [app]])
+            [challenge.backend.server :refer [app]])
   (:import (com.zaxxer.hikari HikariDataSource)))
 
 (def ^:private db-spec {:dbtype "postgresql"

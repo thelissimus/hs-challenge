@@ -1,4 +1,4 @@
-(ns challenge.lib)
+(ns challenge.backend.lib)
 
 (defmacro conform-let
   {:clj-kondo/lint-as 'clojure.core/let}

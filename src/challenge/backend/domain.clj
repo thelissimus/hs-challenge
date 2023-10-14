@@ -1,4 +1,4 @@
-(ns challenge.domain
+(ns challenge.backend.domain
   (:require [clojure.spec.alpha :as s]
             [next.jdbc.types :as types]
             [java-time.api :as time])
