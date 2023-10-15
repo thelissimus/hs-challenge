@@ -1,4 +1,10 @@
-(ns challenge.frontend.core)
+(ns challenge.frontend.core
+  (:require [reagent.core :as r]
+            [reagent.dom :as rd]))
+
+(defn app []
+  [:div
+   [:h1 "Hello, World"]])
 
 (defn init []
-  (println "hello, world"))
+  (rd/render [app] (.-body js/document)))
