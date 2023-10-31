@@ -4,11 +4,29 @@
  [[reagent "1.2.0"]
   [re-frame "1.3.0"]
   [metosin/reitit-spec "0.7.0-alpha7"]
-  [metosin/reitit-frontend "0.7.0-alpha7"]]
+  [metosin/reitit-frontend "0.7.0-alpha7"]
+  [day8.re-frame/tracing "0.6.2"]
+  [binaryage/devtools "1.0.6"]
+  [day8.re-frame/re-frame-10x "1.5.0"]]
 
- :dev-http {3000 "public"}
+ :dev-http
+ {3000 "resources/public"}
 
  :builds
  {:frontend
   {:target :browser
-   :modules {:main {:init-fn challenge.frontend.core/init}}}}}
+   :output-dir "resources/public/js/compiled"
+   :asset-path "/js/compiled"
+   :modules
+   {:main {:init-fn challenge.frontend.core/init}}
+   :devtools
+   {:preloads [day8.re-frame-10x.preload]}
+   :dev
+   {:compiler-options
+    {:closure-defines
+     {re-frame.trace.trace-enabled? true
+      day8.re-frame.tracing.trace-enabled? true}}}
+   :release
+   {:build-options
+    {:ns-aliases
+     {day8.re-frame.tracing day8.re-frame.tracing-stubs}}}}}}

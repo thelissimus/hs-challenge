@@ -1,6 +1,7 @@
 (ns challenge.frontend.core
   (:require [reagent.core :as r]
-            [reagent.dom :as rd]
+            [reagent.dom :as rdom]
+            [re-frame.core :as re-frame]
             [reitit.frontend :as rf]
             [reitit.frontend.easy :as rfe]
             [reitit.coercion.spec :as rcs]
@@ -36,8 +37,14 @@
      :view view/patient-edit
      :parameters {:path {:id int?}}}]])
 
-(defn init []
+(defn ^:dev/after-load mount-root []
+  (re-frame/clear-subscription-cache!)
   (rfe/start! (rf/router routes {:data {:coercion rcs/coercion}})
               (fn [m] (reset! match m))
               {:use-fragment true})
-  (rd/render [current-page] (.-body js/document)))
+  (let [root-el (.getElementById js/document "app")]
+    (rdom/unmount-component-at-node root-el)
+    (rdom/render [current-page] root-el)))
+
+(defn init []
+  (mount-root))

@@ -18,5 +18,5 @@ pom.xml.asc
 .calva/
 
 node_modules/
-public/js/
+resources/public/js/
 .shadow-cljs/
