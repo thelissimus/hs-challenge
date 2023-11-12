@@ -1,22 +1,21 @@
 (ns challenge.frontend.core
-  (:require [reagent.core :as r]
-            [reagent.dom :as rdom]
-            [re-frame.core :as re-frame]
+  (:require [reagent.dom :as rdom]
+            [re-frame.core :as reframe]
             [reitit.frontend :as rf]
             [reitit.frontend.easy :as rfe]
             [reitit.coercion.spec :as rcs]
-            [challenge.frontend.view :as view]))
+            [challenge.frontend.view :as view]
+            [challenge.frontend.subs :as subs]
+            [challenge.frontend.events :as events]))
 
-(defonce match (r/atom nil))
-
-(defn current-page []
-  [:div
-   [:ul
-    [:li [:a {:href (rfe/href ::home-page)} "Home page"]]
-    [:li [:a {:href (rfe/href ::patients-list)} "Patients list"]]]
-   (when @match
-     (let [view (:view (:data @match))]
-       [view @match]))])
+(defn main-page []
+  (let [current-route @(reframe/subscribe [::subs/current-route])]
+    [:div
+     [:ul
+      [:li [:a {:href (rfe/href ::home-page)} "Home page"]]
+      [:li [:a {:href (rfe/href ::patients-list)} "Patients list"]]]
+     (when current-route
+       [(-> current-route :data :view)])]))
 
 (def routes
   [["/"
@@ -25,7 +24,9 @@
 
    ["/patients"
     {:name ::patients-list
-     :view view/patients-list}]
+     :view view/patients-list
+     :controllers
+     [{:start (fn [& _] (reframe/dispatch [::events/fetch-patients-list]))}]}]
 
    ["/patients/:id"
     {:name ::patient-info
@@ -38,13 +39,14 @@
      :parameters {:path {:id int?}}}]])
 
 (defn ^:dev/after-load mount-root []
-  (re-frame/clear-subscription-cache!)
+  (reframe/clear-subscription-cache!)
   (rfe/start! (rf/router routes {:data {:coercion rcs/coercion}})
-              (fn [m] (reset! match m))
+              (fn [m] (when m (reframe/dispatch [::events/navigated m])))
               {:use-fragment true})
-  (let [root-el (.getElementById js/document "app")]
-    (rdom/unmount-component-at-node root-el)
-    (rdom/render [current-page] root-el)))
+  (let [root (.getElementById js/document "app")]
+    (rdom/unmount-component-at-node root)
+    (rdom/render [main-page] root)))
 
 (defn init []
+  (reframe/dispatch-sync [::events/init-db])
   (mount-root))
