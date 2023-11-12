@@ -5,6 +5,7 @@
                  [http-kit/http-kit "2.7.0"]
                  [ring/ring-core "1.10.0"]
                  [ring/ring-devel "1.10.0"]
+                 [jumblerg/ring-cors "3.0.0"]
                  [compojure "1.7.0"]
                  [com.github.seancorfield/next.jdbc "1.3.883"]
                  [com.zaxxer/HikariCP "5.0.1"]

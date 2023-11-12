@@ -18,13 +18,12 @@
 
 (reframe/reg-event-db
  ::fetch-patients-list-ok
- (fn [db [_ {:keys [data]}]]
-   (assoc db :patients-list data)))
+ (fn [db [_ {:keys [body]}]]
+   (assoc db :patients-list (:data body))))
 
 (reframe/reg-event-db
  ::fetch-patients-list-err
- (fn [_ [_ args & _]]
-   (println (:problem-message args))))
+ (fn [db _] db))
 
 (reframe/reg-event-fx
  ::fetch-patients-list

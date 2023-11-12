@@ -3,6 +3,7 @@
   (:require [next.jdbc :as jdbc]
             [next.jdbc.result-set :refer [as-unqualified-lower-maps]]
             [next.jdbc.sql :as sql]
+            [jumblerg.middleware.cors :refer [wrap-cors]]
             [compojure.core :refer [GET POST PATCH DELETE context routes]]
             [compojure.middleware :refer [wrap-canonical-redirect]]
             [cheshire.core :as json]
@@ -50,20 +51,21 @@
 (defn app [ds]
   (let [ds (jdbc/with-options ds {:builder-fn as-unqualified-lower-maps})]
     (routes
-     (wrap-canonical-redirect
-      (context "/patients" []
-        (GET  "/" []  (patients-get-all ds))
-        (POST "/" req (conform-let [pat (s/conform ::domain/patient
-                                                   (-> (:body req)
-                                                       (io/reader :encoding "UTF-8")
-                                                       (json/parse-stream true)))]
-                                   ((patients-add ds) pat)))
-        (context "/:id" [id]
-          (GET    "/" []  (conform-let  [id (s/conform ::string->int id)] ((patients-get ds) id)))
-          (PATCH  "/" req (conform-let* [id (s/conform ::string->int id)
-                                         pat (s/conform ::domain/patient-partial
-                                                        (-> (:body req)
-                                                            (io/reader :encoding "UTF-8")
-                                                            (json/parse-stream true)))]
-                                        ((patients-update ds) id pat)))
-          (DELETE "/" []  (conform-let [id (s/conform ::string->int id)] ((patients-delete ds) id)))))))))
+     (-> (context "/patients" []
+           (GET  "/" []  (patients-get-all ds))
+           (POST "/" req (conform-let [pat (s/conform ::domain/patient
+                                                      (-> (:body req)
+                                                          (io/reader :encoding "UTF-8")
+                                                          (json/parse-stream true)))]
+                                      ((patients-add ds) pat)))
+           (context "/:id" [id]
+             (GET    "/" []  (conform-let  [id (s/conform ::string->int id)] ((patients-get ds) id)))
+             (PATCH  "/" req (conform-let* [id (s/conform ::string->int id)
+                                            pat (s/conform ::domain/patient-partial
+                                                           (-> (:body req)
+                                                               (io/reader :encoding "UTF-8")
+                                                               (json/parse-stream true)))]
+                                           ((patients-update ds) id pat)))
+             (DELETE "/" []  (conform-let [id (s/conform ::string->int id)] ((patients-delete ds) id)))))
+         (wrap-canonical-redirect)
+         (wrap-cors #".*")))))
