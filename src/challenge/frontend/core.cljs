@@ -13,7 +13,8 @@
     [:div
      [:ul
       [:li [:a {:href (rfe/href ::home-page)} "Home page"]]
-      [:li [:a {:href (rfe/href ::patients-list)} "Patients list"]]]
+      [:li [:a {:href (rfe/href ::patients-list)} "Patients list"]]
+      [:li [:a {:href (rfe/href ::patient-create)} "Patient create"]]]
      (when current-route
        [(-> current-route :data :view)])]))
 
@@ -28,15 +29,25 @@
      :controllers
      [{:start (fn [& _] (reframe/dispatch [::events/fetch-patients-list]))}]}]
 
-   ["/patients/:id"
+   ["/patients/create"
+    {:name ::patient-create
+     :view view/patient-create}]
+
+   ["/patients/list/:id"
     {:name ::patient-info
      :view view/patient-info
-     :parameters {:path {:id int?}}}]
+     :parameters {:path {:id int?}}
+     :controllers
+     [{:parameters {:path [:id]}
+       :start (fn [{:keys [path]}] (println (:id path)))}]}]
 
-   ["/patients/:id/edit"
+   ["/patients/list/:id/edit"
     {:name ::patient-edit
      :view view/patient-edit
-     :parameters {:path {:id int?}}}]])
+     :parameters {:path {:id int?}}
+     :controllers
+     [{:parameters {:path [:id]}
+       :start (fn [{:keys [path]}] (println (:id path)))}]}]])
 
 (defn ^:dev/after-load mount-root []
   (reframe/clear-subscription-cache!)

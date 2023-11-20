@@ -1,5 +1,6 @@
 (ns challenge.frontend.view
-  (:require [re-frame.core :as re-frame]
+  (:require [reagent.core :as r]
+            [re-frame.core :as re-frame]
             [challenge.frontend.subs :as subs]))
 
 (defn home-page []
@@ -29,6 +30,18 @@
      [:tbody
       (for [p patients]
         [:tr {:key (:id p)} (patient-row p)])]]))
+
+(defn patient-create []
+  (let [first-name (r/atom "")
+        middle-name (r/atom "")
+        last-name (r/atom "")]
+    [:<>
+     [:h2 "Patient create"]
+     [:form {:on-submit (fn [event] (.preventDefault event))}
+      [:input {:type "text" :placeholder "First name" :on-change #(reset! first-name (-> %1 .-target .-value))}]
+      [:input {:type "text" :placeholder "Middle name" :on-change #(reset! middle-name (-> %1 .-target .-value))}]
+      [:input {:type "text" :placeholder "Last name" :on-change #(reset! last-name (-> %1 .-target .-value))}]
+      [:button {:type "submit"} "Submit"]]]))
 
 (defn patient-info []
   [:h2 "Patient info"])
