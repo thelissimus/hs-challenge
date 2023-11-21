@@ -14,7 +14,18 @@
                  [org.slf4j/slf4j-simple "2.0.9"]
                  [com.taoensso/timbre "6.2.2"]
                  [clojure.java-time "1.3.0"]
-                 [cheshire "5.12.0"]]
+                 [cheshire "5.12.0"]
+                 ;; frontend
+                 [reagent "1.2.0"]
+                 [re-frame "1.3.0"]
+                 [superstructor/re-frame-fetch-fx "0.4.0"]
+                 [metosin/reitit-spec "0.7.0-alpha7"]
+                 [metosin/reitit-frontend "0.7.0-alpha7"]
+                 [day8.re-frame/tracing "0.6.2"]
+                 [binaryage/devtools "1.0.6"]
+                 [day8.re-frame/re-frame-10x "1.5.0"]
+                 ;; tooling
+                 [thheller/shadow-cljs "2.26.0"]]
   :main ^:skip-aot challenge.backend.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all
