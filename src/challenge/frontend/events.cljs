@@ -8,7 +8,10 @@
  ::init-db
  (fn [_ _]
    {:current-route nil
-    :patients-list []}))
+    :patients-list []
+    :patient-current {}
+    :form-patient-create {}
+    :form-patient-update {}}))
 
 (reframe/reg-event-db
  ::navigated
@@ -18,9 +21,9 @@
      (assoc db :current-route (assoc newm :controllers cs)))))
 
 (reframe/reg-event-db
- ::update-form-patient-create
- (fn [db [_ key val]]
-   (assoc-in db [:form-patient-create key] val)))
+ ::update-form
+ (fn [db [_ form key val]]
+   (assoc-in db [form key] val)))
 
 (reframe/reg-event-db
  ::fetch-patients-list-ok
@@ -43,6 +46,27 @@
             :on-failure             [::fetch-patients-list-err]}}))
 
 (reframe/reg-event-db
+ ::save-form-patient-create-ok
+ (fn [db [_ {:keys [body]}]]
+   (dissoc db :form-patient-create)))
+
+(reframe/reg-event-db
+ ::save-form-patient-create-err
+ (fn [db _] db))
+
+(reframe/reg-event-fx
+ ::save-form-patient-create
+ (fn [{:keys [db]} _]
+   {:fetch {:method                 :post
+            :body                   (clj->json (:form-patient-create db))
+            :url                    "http://localhost:8080/patients"
+            :mode                   :cors
+            :timeout                5000
+            :response-content-types {#"application/.*json" :json}
+            :on-success             [::save-form-patient-create-ok]
+            :on-failure             [::save-form-patient-create-err]}}))
+
+(reframe/reg-event-db
  ::fetch-patient-current-ok
  (fn [db [_ {:keys [body]}]]
    (assoc db :patient-current body)))
@@ -63,23 +87,42 @@
             :on-failure             [::fetch-patient-current-err]}}))
 
 (reframe/reg-event-db
- ::save-form-patient-create-ok
+ ::fetch-patient-current-update-ok
  (fn [db [_ {:keys [body]}]]
-   (println body)
-   db))
+   (assoc db :form-patient-update body)))
 
 (reframe/reg-event-db
- ::save-form-patient-create-err
+ ::fetch-patient-current-update-err
  (fn [db _] db))
 
 (reframe/reg-event-fx
- ::save-form-patient-create
- (fn [{:keys [db]} _]
-   {:fetch {:method                 :post
-            :body                   (clj->json (:form-patient-create db))
-            :url                    "http://localhost:8080/patients"
+ ::fetch-patient-current-update
+ (fn [_ [_ id]]
+   {:fetch {:method                 :get
+            :url                    (str "http://localhost:8080/patients/" id)
             :mode                   :cors
             :timeout                5000
             :response-content-types {#"application/.*json" :json}
-            :on-success             [::save-form-patient-create-ok]
-            :on-failure             [::save-form-patient-create-err]}}))
+            :on-success             [::fetch-patient-current-update-ok]
+            :on-failure             [::fetch-patient-current-update-err]}}))
+
+(reframe/reg-event-db
+ ::save-form-patient-update-ok
+ (fn [db [_ {:keys [body]}]] db))
+
+(reframe/reg-event-db
+ ::save-form-patient-update-err
+ (fn [db _] db))
+
+(reframe/reg-event-fx
+ ::save-form-patient-update
+ (fn [{:keys [db]} _]
+   (let [form (:form-patient-update db)]
+     {:fetch {:method                 :patch
+              :body                   (clj->json form)
+              :url                    (str "http://localhost:8080/patients/" (:id form))
+              :mode                   :cors
+              :timeout                5000
+              :response-content-types {#"application/.*json" :json}
+              :on-success             [::save-form-patient-update-ok]
+              :on-failure             [::save-form-patient-update-err]}})))

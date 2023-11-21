@@ -16,3 +16,7 @@
 (re-frame/reg-sub
  ::form-patient-create
  (fn [db [_ id]] (get-in db [:form-patient-create id])))
+
+(re-frame/reg-sub
+ ::form-patient-update
+ (fn [db [_ id]] (get-in db [:form-patient-update id])))

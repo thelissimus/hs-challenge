@@ -1,7 +1,18 @@
 (ns challenge.frontend.view
   (:require [re-frame.core :as reframe]
+            [reitit.frontend.easy :as rfe]
             [challenge.frontend.events :as events]
             [challenge.frontend.subs :as subs]))
+
+(defn main-page []
+  (let [current-route @(reframe/subscribe [::subs/current-route])]
+    [:div
+     [:ul
+      [:li [:a {:href (rfe/href :home-page)} "Home page"]]
+      [:li [:a {:href (rfe/href :patients-list)} "Patients list"]]
+      [:li [:a {:href (rfe/href :patient-create)} "Patient create"]]]
+     (when current-route
+       [(-> current-route :data :view)])]))
 
 (defn home-page []
   [:h2 "Home"])
@@ -13,7 +24,8 @@
    [tag (:sex p)]
    [tag (:birth_date p)]
    [tag (:address p)]
-   [tag (:insurance p)]])
+   [tag (:insurance p)]
+   [tag [:a {:href (rfe/href :patient-edit {:id (:id p)})} "Edit"]]])
 
 (defn patients-list []
   [:h2 "Patients list"]
@@ -31,39 +43,81 @@
       (for [p patients]
         [:tr {:key (:id p)} (patient-row p :td)])]]))
 
-(defn input
-  ([id placeholder] (input id placeholder {:type "text"}))
-  ([id placeholder attrs]
-   (let [value @(reframe/subscribe [::subs/form-patient-create id])]
-     [:<>
-      [:label {:for id}]
-      [:input (->> {:value value
-                    :placeholder placeholder
-                    :on-change #(reframe/dispatch [::events/update-form-patient-create id (-> % .-target .-value)])}
-                   (merge attrs))]])))
+(defn input-view [key value form placeholder attrs]
+  [:<>
+   [:label {:for key}]
+   [:input (->> {:value       value
+                 :placeholder placeholder
+                 :on-change   #(reframe/dispatch [::events/update-form
+                                                  form
+                                                  key
+                                                  (-> % .-target .-value)])}
+                (merge attrs))]])
 
-(defn select [id placeholder options]
-  (let [value @(reframe/subscribe [::subs/form-patient-create id])]
-    [:select {:value value
-              :on-change #(reframe/dispatch [::events/update-form-patient-create id (-> % .-target .-value)])}
-     [:option {:selected "selected" :disabled true :hidden true} placeholder]
-     (for [{:keys [value label]} options]
-       [:option {:key value :value value} label])]))
+(defn input-create
+  ([key placeholder]
+   [input-create key placeholder {:type "text"}])
+
+  ([key placeholder attrs]
+   [input-view
+    key
+    @(reframe/subscribe [::subs/form-patient-create key])
+    :form-patient-create
+    placeholder
+    attrs]))
+
+(defn input-update
+  ([key placeholder]
+   [input-update key placeholder {:type "text"}])
+
+  ([key placeholder attrs]
+   [input-view
+    key
+    @(reframe/subscribe [::subs/form-patient-update key])
+    :form-patient-update
+    placeholder
+    attrs]))
+
+(defn select-view [key value form placeholder options]
+  [:select {:value     value
+            :on-change #(reframe/dispatch [::events/update-form
+                                           form
+                                           key
+                                           (-> % .-target .-value)])}
+   [:option {:selected "selected" :disabled true :hidden true} placeholder]
+   (for [{:keys [value label]} options]
+     [:option {:key value :value value} label])])
+
+(defn select-create [key placeholder options]
+  [select-view
+   key
+   @(reframe/subscribe [::subs/form-patient-create key])
+   :form-patient-create
+   placeholder
+   options])
+
+(defn select-update [key placeholder options]
+  [select-view
+   key
+   @(reframe/subscribe [::subs/form-patient-update key])
+   :form-patient-update
+   placeholder
+   options])
 
 (defn patient-create []
   [:<>
    [:h2 "Patient create"]
    [:form {:on-submit (fn [event] (.preventDefault event))}
-    [input :first_name "First name"]
-    [input :middle_name "Middle name"]
-    [input :last_name "Last name"]
-    [select :sex "Sex" [{:value "male" :label "Male"}
-                        {:value "female" :label "Female"}]]
-    [input :birth_date "Birth date" {:type "date"}]
-    [input :address "Address"]
-    [input :insurance "Insurance"]
+    [input-create :first_name "First name"]
+    [input-create :middle_name "Middle name"]
+    [input-create :last_name "Last name"]
+    [select-create :sex "Sex" [{:value "male" :label "Male"}
+                               {:value "female" :label "Female"}]]
+    [input-create :birth_date "Birth date" {:type "date"}]
+    [input-create :address "Address"]
+    [input-create :insurance "Insurance"]
     [:button {:type "button"
-              :on-click #(reframe/dispatch [::events/save-form-patient-create])} "Submit"]]])
+              :on-click #(reframe/dispatch [::events/save-form-patient-create])} "Create"]]])
 
 (defn patient-info []
   (let [patient @(reframe/subscribe [::subs/patient-current])]
@@ -72,4 +126,16 @@
      [patient-row patient :div]]))
 
 (defn patient-edit []
-  [:h2 "Patient edit"])
+  [:<>
+   [:h2 "Patient edit"]
+   [:form {:on-submit (fn [event] (.preventDefault event))}
+    [input-update :first_name "First name"]
+    [input-update :middle_name "Middle name"]
+    [input-update :last_name "Last name"]
+    [select-update :sex "Sex" [{:value "male" :label "Male"}
+                               {:value "female" :label "Female"}]]
+    [input-update :birth_date "Birth date" {:type "date"}]
+    [input-update :address "Address"]
+    [input-update :insurance "Insurance"]
+    [:button {:type "button"
+              :on-click #(reframe/dispatch [::events/save-form-patient-update])} "Update"]]])
