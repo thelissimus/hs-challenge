@@ -10,5 +10,9 @@
  (fn [db] (:patients-list db)))
 
 (re-frame/reg-sub
+ ::patient-current
+ (fn [db] (:patient-current db)))
+
+(re-frame/reg-sub
  ::form-patient-create
  (fn [db [_ id]] (get-in db [:form-patient-create id])))

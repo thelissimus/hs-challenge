@@ -39,7 +39,7 @@
      :parameters {:path {:id int?}}
      :controllers
      [{:parameters {:path [:id]}
-       :start (fn [{:keys [path]}] (println (:id path)))}]}]
+       :start (fn [{:keys [path]}] (reframe/dispatch [::events/fetch-patient-current (:id path)]))}]}]
 
    ["/patients/list/:id/edit"
     {:name ::patient-edit

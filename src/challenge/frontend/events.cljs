@@ -34,13 +34,33 @@
 (reframe/reg-event-fx
  ::fetch-patients-list
  (fn [_ _]
-   {:fetch {:method :get
+   {:fetch {:method                 :get
             :url                    "http://localhost:8080/patients"
             :mode                   :cors
             :timeout                5000
             :response-content-types {#"application/.*json" :json}
             :on-success             [::fetch-patients-list-ok]
             :on-failure             [::fetch-patients-list-err]}}))
+
+(reframe/reg-event-db
+ ::fetch-patient-current-ok
+ (fn [db [_ {:keys [body]}]]
+   (assoc db :patient-current body)))
+
+(reframe/reg-event-db
+ ::fetch-patient-current-err
+ (fn [db _] db))
+
+(reframe/reg-event-fx
+ ::fetch-patient-current
+ (fn [_ [_ id]]
+   {:fetch {:method                 :get
+            :url                    (str "http://localhost:8080/patients/" id)
+            :mode                   :cors
+            :timeout                5000
+            :response-content-types {#"application/.*json" :json}
+            :on-success             [::fetch-patient-current-ok]
+            :on-failure             [::fetch-patient-current-err]}}))
 
 (reframe/reg-event-db
  ::save-form-patient-create-ok

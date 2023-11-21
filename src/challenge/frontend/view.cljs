@@ -6,14 +6,14 @@
 (defn home-page []
   [:h2 "Home"])
 
-(defn patient-row [p]
+(defn patient-row [p tag]
   [:<>
-   [:td (:id p)]
-   [:td (str (:first_name p) " " (:middle_name p) " " (:last_name p))]
-   [:td (:sex p)]
-   [:td (:birth_date p)]
-   [:td (:address p)]
-   [:td (:insurance p)]])
+   [tag (:id p)]
+   [tag (str (:first_name p) " " (:middle_name p) " " (:last_name p))]
+   [tag (:sex p)]
+   [tag (:birth_date p)]
+   [tag (:address p)]
+   [tag (:insurance p)]])
 
 (defn patients-list []
   [:h2 "Patients list"]
@@ -29,7 +29,7 @@
        [:th "Insurance"]]]
      [:tbody
       (for [p patients]
-        [:tr {:key (:id p)} (patient-row p)])]]))
+        [:tr {:key (:id p)} (patient-row p :td)])]]))
 
 (defn input
   ([id placeholder] (input id placeholder {:type "text"}))
@@ -66,7 +66,10 @@
               :on-click #(reframe/dispatch [::events/save-form-patient-create])} "Submit"]]])
 
 (defn patient-info []
-  [:h2 "Patient info"])
+  (let [patient @(reframe/subscribe [::subs/patient-current])]
+    [:<>
+     [:h2 "Patient info"]
+     [patient-row patient :div]]))
 
 (defn patient-edit []
   [:h2 "Patient edit"])
