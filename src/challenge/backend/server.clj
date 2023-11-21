@@ -68,4 +68,4 @@
                                            ((patients-update ds) id pat)))
              (DELETE "/" []  (conform-let [id (s/conform ::string->int id)] ((patients-delete ds) id)))))
          (wrap-canonical-redirect)
-         (wrap-cors #".*")))))
+         (wrap-cors identity)))))

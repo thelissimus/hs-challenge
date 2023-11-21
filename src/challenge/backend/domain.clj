@@ -8,7 +8,7 @@
 (s/def ::middle_name (s/and string? #(>= 255 (count %))))
 (s/def ::last_name (s/and string? #(>= 255 (count %))))
 (s/def ::sex (s/conformer #(if (contains? #{"male" "female"} %) (types/as-other %) ::s/invalid)))
-(s/def ::birth_date (s/conformer #(try (time/local-date-time %)
+(s/def ::birth_date (s/conformer #(try (time/local-date %)
                                        (catch DateTimeParseException _ ::s/invalid))))
 (s/def ::address string?)
 (s/def ::insurance string?)

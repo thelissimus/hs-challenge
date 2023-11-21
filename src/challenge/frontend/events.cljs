@@ -1,7 +1,8 @@
 (ns challenge.frontend.events
   (:require [re-frame.core :as reframe]
             [superstructor.re-frame.fetch-fx]
-            [reitit.frontend.controllers :refer [apply-controllers]]))
+            [reitit.frontend.controllers :refer [apply-controllers]]
+            [challenge.frontend.lib :refer [clj->json]]))
 
 (reframe/reg-event-db
  ::init-db
@@ -53,9 +54,9 @@
 
 (reframe/reg-event-fx
  ::save-form-patient-create
- (fn [db _]
+ (fn [{:keys [db]} _]
    {:fetch {:method                 :post
-            :body                   (:form-patient-create db)
+            :body                   (clj->json (:form-patient-create db))
             :url                    "http://localhost:8080/patients"
             :mode                   :cors
             :timeout                5000
