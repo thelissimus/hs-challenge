@@ -43,11 +43,11 @@
       (for [p patients]
         [:tr {:key (:id p)} (patient-row p :td)])]]))
 
-(defn input-view [key value form placeholder attrs]
+(defn input-view [key form placeholder attrs]
   [:<>
    [:label {:for key}]
-   [:input (->> {:value       value
-                 :placeholder placeholder
+   [:input (->> {:placeholder placeholder
+                 :value       @(reframe/subscribe [::subs/form form key])
                  :on-change   #(reframe/dispatch [::events/update-form
                                                   form
                                                   key
@@ -59,27 +59,17 @@
    [input-create key placeholder {:type "text"}])
 
   ([key placeholder attrs]
-   [input-view
-    key
-    @(reframe/subscribe [::subs/form-patient-create key])
-    :form-patient-create
-    placeholder
-    attrs]))
+   [input-view key :form-patient-create placeholder attrs]))
 
 (defn input-update
   ([key placeholder]
    [input-update key placeholder {:type "text"}])
 
   ([key placeholder attrs]
-   [input-view
-    key
-    @(reframe/subscribe [::subs/form-patient-update key])
-    :form-patient-update
-    placeholder
-    attrs]))
+   [input-view key :form-patient-update placeholder attrs]))
 
-(defn select-view [key value form placeholder options]
-  [:select {:value     value
+(defn select-view [key form placeholder options]
+  [:select {:value     @(reframe/subscribe [::subs/form form key])
             :on-change #(reframe/dispatch [::events/update-form
                                            form
                                            key
@@ -89,20 +79,10 @@
      [:option {:key value :value value} label])])
 
 (defn select-create [key placeholder options]
-  [select-view
-   key
-   @(reframe/subscribe [::subs/form-patient-create key])
-   :form-patient-create
-   placeholder
-   options])
+  [select-view key :form-patient-create placeholder options])
 
 (defn select-update [key placeholder options]
-  [select-view
-   key
-   @(reframe/subscribe [::subs/form-patient-update key])
-   :form-patient-update
-   placeholder
-   options])
+  [select-view key :form-patient-update placeholder options])
 
 (defn patient-create []
   [:<>
@@ -138,4 +118,6 @@
     [input-update :address "Address"]
     [input-update :insurance "Insurance"]
     [:button {:type "button"
-              :on-click #(reframe/dispatch [::events/save-form-patient-update])} "Update"]]])
+              :on-click #(reframe/dispatch [::events/save-form-patient-update])} "Update"]
+    [:button {:type "button"
+              :on-click #(reframe/dispatch [::events/save])}]]])
