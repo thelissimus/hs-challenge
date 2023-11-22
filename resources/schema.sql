@@ -1,6 +1,6 @@
 CREATE TYPE sex_t AS ENUM('male', 'female');
 
-CREATE TABLE patients (
+CREATE TABLE IF NOT EXISTS patients (
     first_name  VARCHAR(255) NOT NULL,
     middle_name VARCHAR(255) NOT NULL,
     last_name   VARCHAR(255) NOT NULL,
