@@ -12,7 +12,7 @@
     {:name :patients-list
      :view view/patients-list
      :controllers
-     [{:start (fn [& _] (reframe/dispatch [::events/fetch-patients-list]))}]}]
+     [{:start (fn [] (reframe/dispatch [::events/fetch-patients-list]))}]}]
 
    ["/patients/create"
     {:name :patient-create

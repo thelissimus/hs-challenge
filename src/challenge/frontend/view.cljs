@@ -118,6 +118,9 @@
     [input-update :address "Address"]
     [input-update :insurance "Insurance"]
     [:button {:type "button"
-              :on-click #(reframe/dispatch [::events/save-form-patient-update])} "Update"]
+              :on-click #(reframe/dispatch [::events/save-form-patient-update])}
+     "Update"]
     [:button {:type "button"
-              :on-click #(reframe/dispatch [::events/save])}]]])
+              :on-click #(do (reframe/dispatch [::events/delete-patient])
+                             (rfe/push-state :patients-list))}
+     "Delete"]]])

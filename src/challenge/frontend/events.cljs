@@ -141,3 +141,25 @@
               :response-content-types {#"application/.*json" :json}
               :on-success             [::save-form-patient-update-ok]
               :on-failure             [::save-form-patient-update-err]}})))
+
+;; DELETE patients/:id
+(reframe/reg-event-db
+ ::delete-patient-ok
+ (fn [db _]
+   (dissoc db :form-patient-update)))
+
+(reframe/reg-event-db
+ ::delete-patient-err
+ (fn [db _] db))
+
+(reframe/reg-event-fx
+ ::delete-patient
+ (fn [{:keys [db]} _]
+   {:fetch {:method                 :delete
+            :url                    (str "http://localhost:8080/patients/"
+                                         (get-in db [:form-patient-update :id]))
+            :mode                   :cors
+            :timeout                5000
+            :response-content-types {#"application/.*json" :json}
+            :on-success             [::delete-patient-ok]
+            :on-failure             [::delete-patient-err]}}))
