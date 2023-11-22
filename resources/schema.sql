@@ -10,9 +10,5 @@ CREATE TABLE patients (
     insurance   VARCHAR      NOT NULL,
 
     id          INTEGER GENERATED ALWAYS AS IDENTITY,
-    created_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at  TIMESTAMP,
-    deleted_at  TIMESTAMP,
-
     PRIMARY KEY (id)
 );

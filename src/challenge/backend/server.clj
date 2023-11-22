@@ -7,10 +7,15 @@
             [compojure.core :refer [GET POST PATCH DELETE context routes]]
             [compojure.middleware :refer [wrap-canonical-redirect]]
             [cheshire.core :as json]
+            [cheshire.generate :refer [add-encoder]]
             [challenge.backend.domain :as domain]
             [challenge.backend.lib :refer [conform-let conform-let*]]
             [clojure.java.io :as io]
-            [clojure.spec.alpha :as s]))
+            [clojure.spec.alpha :as s]
+            [java-time.api :as time]))
+
+(add-encoder java.time.LocalDate
+             (fn [c jsonGen] (.writeString jsonGen (.toString c))))
 
 (s/def ::string->int (s/conformer #(try (Integer/parseInt %)
                                         (catch NumberFormatException _ ::s/invalid))))
@@ -19,8 +24,9 @@
   (fn [_]
     {:status 200
      :headers {"Content-Type" "application/json"}
-     :body (let [res (sql/query ds ["SELECT * FROM patients WHERE deleted_at IS NULL;"])]
-             (json/generate-string {:data res :count (count res)}))}))
+     :body (let [res (sql/query ds ["SELECT * FROM patients;"])]
+             (json/generate-string {:data  (map (fn [a] (update a :birth_date #(time/local-date %))) res)
+                                    :count (count res)}))}))
 
 (defn patients-add [ds]
   (fn [patient]
@@ -30,10 +36,12 @@
 
 (defn patients-get [ds]
   (fn [id]
-    (if-let [res (jdbc/execute-one! ds ["SELECT * FROM patients WHERE id = ? AND deleted_at IS NULL;" id])]
+    (if-let [res (jdbc/execute-one! ds ["SELECT * FROM patients WHERE id = ?;" id])]
       {:status 200
        :headers {"Content-Type" "application/json"}
-       :body (json/generate-string res)}
+       :body (-> res
+                 (update :birth_date #(time/local-date %))
+                 (json/generate-string))}
       {:status 204})))
 
 (defn patients-update [ds]
