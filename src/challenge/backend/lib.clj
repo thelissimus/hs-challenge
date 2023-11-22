@@ -1,4 +1,5 @@
-(ns challenge.backend.lib)
+(ns challenge.backend.lib
+  (:require [clojure.spec.alpha :as s]))
 
 (defmacro conform-let
   {:clj-kondo/lint-as 'clojure.core/let}
@@ -9,8 +10,7 @@
 
 (defmacro conform-let*
   {:clj-kondo/lint-as 'clojure.core/let}
-  [bindings & body]
+  [[sym expr & rest :as bindings] & body]
   (if (seq bindings)
-    `(conform-let [~(first bindings) ~(second bindings)]
-                  (conform-let* ~(vec (drop 2 bindings)) ~@body))
+    `(conform-let [~sym ~expr] (conform-let* ~(vec rest) ~@body))
     `(do ~@body)))
