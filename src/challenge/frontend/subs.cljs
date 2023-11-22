@@ -1,18 +1,18 @@
 (ns challenge.frontend.subs
-  (:require [re-frame.core :as re-frame]))
+  (:require [re-frame.core :as reframe]))
 
-(re-frame/reg-sub
+(reframe/reg-sub
  ::current-route
  (fn [db] (:current-route db)))
 
-(re-frame/reg-sub
+(reframe/reg-sub
  ::patients-list
  (fn [db] (:patients-list db)))
 
-(re-frame/reg-sub
+(reframe/reg-sub
  ::patient-current
  (fn [db] (:patient-current db)))
 
-(re-frame/reg-sub
+(reframe/reg-sub
  ::form
  (fn [db [_ form id]] (get-in db [form id])))
