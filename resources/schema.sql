@@ -1,4 +1,9 @@
-CREATE TYPE sex_t AS ENUM('male', 'female');
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_type WHERE typname = 'sex_t') THEN
+        CREATE TYPE sex_t AS ENUM('male', 'female');
+    END IF;
+END$$;
 
 CREATE TABLE IF NOT EXISTS patients (
     first_name  VARCHAR(255) NOT NULL,

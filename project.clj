@@ -2,6 +2,7 @@
   :description "Health Samurai Challenge"
   :license {:name "BSD-3-Clause"}
   :dependencies [[org.clojure/clojure "1.11.1"]
+                 [org.clojure/test.check "1.1.1"]
                  [http-kit/http-kit "2.7.0"]
                  [ring/ring-core "1.10.0"]
                  [ring/ring-devel "1.10.0"]
