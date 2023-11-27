@@ -12,6 +12,7 @@
    [next.jdbc.connection :refer [->pool]]
    [next.jdbc.result-set :refer [as-unqualified-lower-maps]]
    [next.jdbc.date-time :refer [read-as-local]]
+   [challenge.backend.lib :refer [parse-json]]
    [challenge.backend.server :as server]
    [challenge.backend.domain :as domain])
   (:import (com.zaxxer.hikari HikariDataSource)))
@@ -58,7 +59,7 @@
 ;; GET /patients
 (deftest patients-get-all
   (testing "Empty result"
-    (is (= (json/parse-string-strict (:body @(request {:url url-patients :method :get})) true)
+    (is (= (parse-json (:body @(request {:url url-patients :method :get})))
            {:data [] :count 0})))
 
   (testing "Non-empty result"
@@ -67,7 +68,7 @@
           enumerated (map-indexed (fn [i a] (merge a {:id (inc i)})) patients)]
       (sql/insert-multi! @datasource :patients (-> entities first keys vec) (vec (map vals entities)))
 
-      (is (= (json/parse-string-strict (:body @(request {:url url-patients :method :get})) true)
+      (is (= (parse-json (:body @(request {:url url-patients :method :get})))
              {:data enumerated :count (count enumerated)})))))
 
 ;; POST /patients
@@ -87,5 +88,5 @@
           response @(request {:url url-patients
                               :method :post
                               :body (json/generate-string patient)})]
-      (is (= (json/parse-string-strict (:body response) true)
+      (is (= (parse-json (:body response))
              (merge patient {:id 1}))))))

@@ -1,5 +1,7 @@
 (ns challenge.backend.lib
-  (:require [clojure.spec.alpha :as s]))
+  (:require
+   [clojure.spec.alpha :as s]
+   [cheshire.core :as json]))
 
 (defmacro conform-let
   {:clj-kondo/lint-as 'clojure.core/let}
@@ -14,3 +16,6 @@
   (if (seq bindings)
     `(conform-let [~sym ~expr] (conform-let* ~(vec rest) ~@body))
     `(do ~@body)))
+
+(defn parse-json [s]
+  (json/parse-string-strict s true))
