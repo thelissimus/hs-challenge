@@ -4,7 +4,9 @@
    [clojure.test :refer [deftest is testing run-tests use-fixtures]]
    [clojure.spec.alpha :as s]
    [clojure.spec.gen.alpha :as gen]
+   [cheshire.core :as json]
    [org.httpkit.server :refer [run-server]]
+   [org.httpkit.client :refer [request]]
    [next.jdbc :refer [execute!]]
    [next.jdbc.connection :refer [->pool]]
    [challenge.backend.server :refer [app]]
@@ -12,11 +14,12 @@
   (:import (com.zaxxer.hikari HikariDataSource)))
 
 (def ds (atom nil))
-(def server (atom nil))
+(def port 8080)
+(def url (format "http://localhost:%d" port))
 
 (deftest patients-get-all
   (testing "Empty result"
-    (is (= {:data [] :count 0}
+    (is (= (json/parse-string-strict (:body @(request {:url (str url "/patients") :method :get})) true)
            {:data [] :count 0})))
 
   (testing "Non-empty result"
@@ -24,19 +27,17 @@
       (is (= {:data data :count (count data)}
              {:data data :count (count data)})))))
 
-(defn setup-database [tests]
-  (reset! ds (->pool HikariDataSource
-                     {:dbtype "postgresql"
-                      :dbname "challenge_test"
-                      :host "localhost"
-                      :username "postgres"}))
-  (tests)
-  (.close @ds))
-
 (defn setup-server [tests]
-  (reset! server (run-server (app ds) {:port 8080}))
-  (tests)
-  (@server))
+  (let [datasource (->pool HikariDataSource
+                           {:dbtype "postgresql"
+                            :dbname "challenge_test"
+                            :host "localhost"
+                            :username "postgres"})
+        server (run-server (app datasource) {:port 8080})]
+    (reset! ds datasource)
+    (tests)
+    (server)
+    (.close @ds)))
 
 (defn reset-database [tests]
   (execute! @ds [(slurp (io/resource "schema.sql"))])
@@ -44,7 +45,6 @@
   (execute! @ds [(slurp (io/resource "down.sql"))]))
 
 (use-fixtures :once setup-server)
-(use-fixtures :once setup-database)
 (use-fixtures :each reset-database)
 
 (run-tests)
