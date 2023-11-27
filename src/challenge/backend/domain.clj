@@ -17,7 +17,7 @@
 (s/def ::birth_date (s/with-gen
                       (s/conformer #(try (time/local-date %)
                                          (catch DateTimeParseException _ ::s/invalid)))
-                      #(gen/elements [(time/local-date)])))
+                      #(gen/elements [(time/format "YYYY-MM-dd" (time/local-date))])))
 (s/def ::address string?)
 (s/def ::insurance string?)
 (s/def ::patient
