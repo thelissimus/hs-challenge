@@ -1,24 +1,44 @@
 (ns challenge.backend.server
-  (:gen-class)
-  (:require [next.jdbc :as jdbc]
-            [next.jdbc.result-set :refer [as-unqualified-lower-maps]]
-            [next.jdbc.sql :as sql]
-            [jumblerg.middleware.cors :refer [wrap-cors]]
-            [compojure.core :refer [GET POST PATCH DELETE context routes]]
-            [compojure.middleware :refer [wrap-canonical-redirect]]
-            [cheshire.core :as json]
-            [cheshire.generate :refer [add-encoder]]
-            [challenge.backend.domain :as domain]
-            [challenge.backend.lib :refer [conform-let conform-let*]]
-            [clojure.java.io :as io]
-            [clojure.spec.alpha :as s]
-            [java-time.api :as time]))
+  (:require
+   [challenge.backend.domain :as domain]
+   [challenge.backend.lib :refer [conform-let conform-let*] :as lib]
+   [cheshire.core :as json]
+   [cheshire.generate :refer [add-encoder]]
+   [clojure.java.io :as io]
+   [clojure.spec.alpha :as s]
+   [compojure.core :refer [context DELETE GET PATCH POST routes]]
+   [compojure.middleware :refer [wrap-canonical-redirect]]
+   [java-time.api :as time]
+   [jumblerg.middleware.cors :refer [wrap-cors]]
+   [next.jdbc :as jdbc]
+   [next.jdbc.result-set :refer [as-unqualified-lower-maps]]
+   [next.jdbc.sql :as sql]))
+
+;;; data
+
+(defrecord ServerError [message])
+
+(s/def ::message (s/and string? #(< 0 (count %))))
+(s/def ::server-error (s/keys :req-un [::message]))
+(s/def ::string->int (s/conformer #(try (Integer/parseInt %)
+                                        (catch NumberFormatException _ ::s/invalid))))
+
+;;; utils
 
 (add-encoder java.time.LocalDate
              (fn [c jsonGen] (.writeString jsonGen (.toString c))))
 
-(s/def ::string->int (s/conformer #(try (Integer/parseInt %)
-                                        (catch NumberFormatException _ ::s/invalid))))
+(defn validation-err [err]
+  {:status 400
+   :body (json/generate-string err)})
+
+(defn parse-json-body [req]
+  (-> req
+      :body
+      (io/reader :encoding "UTF-8")
+      lib/parse-json-stream))
+
+;;; endpoints
 
 (defn patients-get-all [ds]
   (fn [_]
@@ -56,24 +76,32 @@
      :headers {"Content-Type" "application/json"}
      :body (json/generate-string (sql/delete! ds :patients {:id id}))}))
 
+;;; router
+
 (defn app [ds]
   (let [ds (jdbc/with-options ds {:builder-fn as-unqualified-lower-maps})]
     (routes
      (-> (context "/patients" []
            (GET  "/" []  (patients-get-all ds))
-           (POST "/" req (conform-let [pat (s/conform ::domain/patient
-                                                      (-> (:body req)
-                                                          (io/reader :encoding "UTF-8")
-                                                          (json/parse-stream true)))]
-                                      ((patients-add ds) pat)))
+           (POST "/" req
+             (conform-let* [body (parse-json-body req)
+                            pat (s/conform ::domain/patient body)]
+                           ((patients-add ds) pat)
+                           (validation-err (->ServerError (s/explain-str ::domain/patient body)))))
            (context "/:id" [id]
-             (GET    "/" []  (conform-let  [id (s/conform ::string->int id)] ((patients-get ds) id)))
-             (PATCH  "/" req (conform-let* [id (s/conform ::string->int id)
-                                            pat (s/conform ::domain/patient-partial
-                                                           (-> (:body req)
-                                                               (io/reader :encoding "UTF-8")
-                                                               (json/parse-stream true)))]
-                                           ((patients-update ds) id pat)))
-             (DELETE "/" []  (conform-let [id (s/conform ::string->int id)] ((patients-delete ds) id)))))
+             (GET "/" []
+               (conform-let [id_ (s/conform ::string->int id)]
+                            ((patients-get ds) id_)
+                            nil))
+             (PATCH "/" req
+               (conform-let* [body (parse-json-body req)
+                              id_ (s/conform ::string->int id)
+                              pat (s/conform ::domain/patient-partial body)]
+                             ((patients-update ds) id_ pat)
+                             (validation-err (->ServerError (s/explain-str ::domain/patient-partial body)))))
+             (DELETE "/" []
+               (conform-let [id (s/conform ::string->int id)]
+                            ((patients-delete ds) id)
+                            nil))))
          (wrap-canonical-redirect)
          (wrap-cors identity)))))

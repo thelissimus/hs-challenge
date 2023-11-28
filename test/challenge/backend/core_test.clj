@@ -90,3 +90,13 @@
                               :body (json/generate-string patient)})]
       (is (= (parse-json (:body response))
              (merge patient {:id 1}))))))
+
+(deftest patients-create-invalid
+  (testing "Return a proper error response for invalid data"
+    (let [invalid (dissoc (gen-patient) :first_name)
+          response @(request {:url url-patients
+                              :method :post
+                              :body (json/generate-string invalid)})]
+
+      (is (= (:status response) 400))
+      (is (s/valid? ::server/server-error (parse-json (:body response)))))))

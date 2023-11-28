@@ -5,17 +5,21 @@
 
 (defmacro conform-let
   {:clj-kondo/lint-as 'clojure.core/let}
-  [[sym expr] & body]
+  [[sym expr] conseq alt]
   `(let [~sym ~expr]
-     (when-not (s/invalid? ~sym)
-       (do ~@body))))
+     (if (s/invalid? ~sym) ~alt ~conseq)))
 
 (defmacro conform-let*
   {:clj-kondo/lint-as 'clojure.core/let}
-  [[sym expr & rest :as bindings] & body]
+  [[sym expr & rest :as bindings] conseq alt]
   (if (seq bindings)
-    `(conform-let [~sym ~expr] (conform-let* ~(vec rest) ~@body))
-    `(do ~@body)))
+    `(conform-let [~sym ~expr]
+                  (conform-let* ~(vec rest) ~conseq ~alt)
+                  ~alt)
+    conseq))
 
 (defn parse-json [s]
   (json/parse-string-strict s true))
+
+(defn parse-json-stream [s]
+  (json/parse-stream-strict s true))
