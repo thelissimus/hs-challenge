@@ -72,9 +72,10 @@
 
 (defn patients-delete [ds]
   (fn [id]
-    {:status 200
-     :headers {"Content-Type" "application/json"}
-     :body (json/generate-string (sql/delete! ds :patients {:id id}))}))
+    (let [count (:next.jdbc/update-count (sql/delete! ds :patients {:id id}))]
+      (if (zero? count)
+        {:status 404}
+        {:status 204}))))
 
 ;;; router
 

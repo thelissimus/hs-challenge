@@ -114,3 +114,17 @@
 
       (is (= (parse-json (:body @(request {:url (url-patient 1) :method :get})))
              (merge patient {:id 1}))))))
+
+;; DELETE /patients/:id
+(deftest patients-delete
+  (testing "404 when trying to delete non existent patient"
+    (let [response @(request {:url (url-patient 1) :method :delete})]
+      (is (= (:status response) 404))
+      (is (empty? (:body response)))))
+
+  (testing "204 when trying to delete an existing patient"
+    (sql/insert! @datasource :patients (s/conform ::domain/patient (gen-patient)))
+
+    (let [response @(request {:url (url-patient 1) :method :delete})]
+      (is (= (:status response) 204))
+      (is (empty? (:body response))))))
