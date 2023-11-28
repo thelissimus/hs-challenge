@@ -1,8 +1,9 @@
 (ns challenge.frontend.events
-  (:require [re-frame.core :as reframe]
-            [superstructor.re-frame.fetch-fx]
-            [reitit.frontend.controllers :refer [apply-controllers]]
-            [challenge.frontend.lib :refer [clj->json]]))
+  (:require
+   [re-frame.core :as reframe]
+   [superstructor.re-frame.fetch-fx]
+   [reitit.frontend.controllers :refer [apply-controllers]]
+   [challenge.frontend.lib :refer [clj->json]]))
 
 ;;; state
 

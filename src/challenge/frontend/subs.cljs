@@ -1,5 +1,6 @@
 (ns challenge.frontend.subs
-  (:require [re-frame.core :as reframe]))
+  (:require
+   [re-frame.core :as reframe]))
 
 (reframe/reg-sub
  ::current-route

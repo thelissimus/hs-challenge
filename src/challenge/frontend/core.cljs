@@ -1,12 +1,13 @@
 (ns challenge.frontend.core
-  (:require [reagent.dom :as rdom]
-            [re-frame.core :as reframe]
-            [reitit.frontend :as rf]
-            [reitit.frontend.easy :as rfe]
-            [reitit.coercion.spec :as rcs]
-            [challenge.frontend.events :as events]
-            [challenge.frontend.view :refer [main-page]]
-            [challenge.frontend.routes :refer [routes]]))
+  (:require
+   [reagent.dom :as rdom]
+   [re-frame.core :as reframe]
+   [reitit.frontend :as rf]
+   [reitit.frontend.easy :as rfe]
+   [reitit.coercion.spec :as rcs]
+   [challenge.frontend.events :as events]
+   [challenge.frontend.view :refer [main-page]]
+   [challenge.frontend.routes :refer [routes]]))
 
 (defn ^:dev/after-load mount-root []
   (reframe/clear-subscription-cache!)

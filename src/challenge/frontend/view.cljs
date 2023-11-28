@@ -1,8 +1,9 @@
 (ns challenge.frontend.view
-  (:require [re-frame.core :as reframe]
-            [reitit.frontend.easy :as rfe]
-            [challenge.frontend.events :as events]
-            [challenge.frontend.subs :as subs]))
+  (:require
+   [re-frame.core :as reframe]
+   [reitit.frontend.easy :as rfe]
+   [challenge.frontend.events :as events]
+   [challenge.frontend.subs :as subs]))
 
 (defn main-page []
   (let [current-route @(reframe/subscribe [::subs/current-route])]

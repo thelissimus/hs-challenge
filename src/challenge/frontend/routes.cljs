@@ -1,7 +1,8 @@
 (ns challenge.frontend.routes
-  (:require [re-frame.core :as reframe]
-            [challenge.frontend.events :as events]
-            [challenge.frontend.view :as view]))
+  (:require
+   [re-frame.core :as reframe]
+   [challenge.frontend.events :as events]
+   [challenge.frontend.view :as view]))
 
 (def routes
   [["/"
