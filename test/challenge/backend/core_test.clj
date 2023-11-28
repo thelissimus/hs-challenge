@@ -27,6 +27,7 @@
 (def port 8080)
 (def url (format "http://localhost:%d" port))
 (def url-patients (str url "/patients"))
+(defn url-patient [id] (str url-patients "/" id))
 
 ;;; utils
 
@@ -100,3 +101,16 @@
 
       (is (= (:status response) 400))
       (is (s/valid? ::server/server-error (parse-json (:body response)))))))
+
+;; GET /patients/:id
+(deftest patients-get
+  (testing "204 for non existent user"
+    (is (= (:status @(request {:url (url-patient 1) :method :get}))
+           204)))
+
+  (testing "Getting user data for the existing user"
+    (let [patient (gen-patient)]
+      (sql/insert! @datasource :patients (s/conform ::domain/patient patient))
+
+      (is (= (parse-json (:body @(request {:url (url-patient 1) :method :get})))
+             (merge patient {:id 1}))))))
