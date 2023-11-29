@@ -100,8 +100,8 @@
 
 ;; GET /patients/:id
 (deftest patients-get
-  (testing "204 when non existent"
-    (is (= (:status @(request {:url (url-patient 1) :method :get})) 204)))
+  (testing "404 when non existent"
+    (is (= (:status @(request {:url (url-patient 1) :method :get})) 404)))
 
   (testing "Get one properly"
     (let [patient (gen-patient)]

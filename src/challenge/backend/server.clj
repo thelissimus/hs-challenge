@@ -60,7 +60,7 @@
        :body (-> res
                  (update :birth_date #(time/local-date %))
                  (json/generate-string))}
-      {:status 204})))
+      {:status 404})))
 
 (defn patients-update [ds]
   (fn [id patient]
