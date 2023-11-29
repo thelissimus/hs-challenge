@@ -17,20 +17,18 @@
    [challenge.backend.domain :as domain])
   (:import (com.zaxxer.hikari HikariDataSource)))
 
-;;; constants
-
-(def datasource (atom nil))
+;;; Constants
+(defonce datasource (atom nil))
 (def db-spec {:dbtype "postgresql"
               :dbname "challenge_test"
               :host "localhost"
               :username "postgres"})
-(def port 8080)
+(defonce port 8080)
 (def url (format "http://localhost:%d" port))
 (def url-patients (str url "/patients"))
 (defn url-patient [id] (str url-patients "/" id))
 
-;;; utils
-
+;;; Utils
 (defn gen-patient []
   (gen/generate (s/gen ::domain/patient)))
 
@@ -40,8 +38,7 @@
 (defn ds-conf [ds]
   (jdbc/with-options ds {:builder-fn as-unqualified-lower-maps}))
 
-;;; fixtures
-
+;;; Fixtures
 (defn setup-server [tests]
   (with-open [^HikariDataSource ds (->pool HikariDataSource db-spec)]
     (let [server (run-server (server/app ds) {:port 8080})]
@@ -58,8 +55,7 @@
 (use-fixtures :once setup-server)
 (use-fixtures :each reset-database)
 
-;;; tests
-
+;;; Tests
 ;; GET /patients
 (deftest patients-get-all
   (testing "Empty result"
@@ -115,7 +111,7 @@
 
 ;; PATCH /patients/:id
 (deftest patients-update
-  (testing "404 when attempting to update non existent entry"
+  (testing "404 when attempting to update non-existent entry"
     (let [response @(request {:url (url-patient 1)
                               :method :patch
                               :body (json/generate-string (gen-patient))})]
@@ -146,7 +142,7 @@
 
 ;; DELETE /patients/:id
 (deftest patients-delete
-  (testing "404 when attempting to delete non existent entry"
+  (testing "404 when attempting to delete non-existent entry"
     (let [response @(request {:url (url-patient 1) :method :delete})]
       (is (= (:status response) 404))
       (is (empty? (:body response)))))
