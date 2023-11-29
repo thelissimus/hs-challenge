@@ -23,6 +23,7 @@
 (s/def ::patient
   (s/keys :req-un [::first_name ::middle_name ::last_name ::sex ::birth_date ::address ::insurance]))
 (s/def ::patient-partial
-  (s/keys :opt-un [::first_name ::middle_name ::last_name ::sex ::birth_date ::address ::insurance]))
+  (s/and (s/keys :opt-un [::first_name ::middle_name ::last_name ::sex ::birth_date ::address ::insurance])
+         #(every? #{:first_name :middle_name :last_name :sex :birth_date :address :insurance} (keys %))))
 
 (defrecord Patient [first_name middle_name last_name sex birth_date address insurance])

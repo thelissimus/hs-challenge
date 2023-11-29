@@ -22,6 +22,7 @@
 (s/def ::server-error (s/keys :req-un [::message]))
 (s/def ::string->int (s/conformer #(try (Integer/parseInt %)
                                         (catch NumberFormatException _ ::s/invalid))))
+(s/def ::non-empty-map (s/and map? not-empty))
 
 ;;; utils
 
@@ -33,10 +34,7 @@
    :body (json/generate-string err)})
 
 (defn parse-json-body [req]
-  (-> req
-      :body
-      (io/reader :encoding "UTF-8")
-      lib/parse-json-stream))
+  (some-> req :body (io/reader :encoding "UTF-8") lib/parse-json-stream))
 
 ;;; endpoints
 
@@ -66,9 +64,10 @@
 
 (defn patients-update [ds]
   (fn [id patient]
-    {:status 200
-     :headers {"Content-Type" "application/json"}
-     :body (json/generate-string (sql/update! ds :patients patient {:id id}))}))
+    (let [count (:next.jdbc/update-count (sql/update! ds :patients patient {:id id}))]
+      (if (zero? count)
+        {:status 404}
+        {:status 204}))))
 
 (defn patients-delete [ds]
   (fn [id]
@@ -97,7 +96,7 @@
              (PATCH "/" req
                (conform-let* [body (parse-json-body req)
                               id_ (s/conform ::string->int id)
-                              pat (s/conform ::domain/patient-partial body)]
+                              pat (s/conform (s/and ::domain/patient-partial ::non-empty-map) body)]
                              ((patients-update ds) id_ pat)
                              (validation-err (->ServerError (s/explain-str ::domain/patient-partial body)))))
              (DELETE "/" []
