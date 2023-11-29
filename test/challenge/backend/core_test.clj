@@ -66,28 +66,26 @@
     (is (= (parse-json (:body @(request {:url url-patients :method :get})))
            {:data [] :count 0})))
 
-  (testing "Non-empty result"
+  (testing "Get all properly"
     (let [patients (repeat 5 (gen-patient))
           entities (map #(s/conform ::domain/patient %) patients)
           enumerated (map-indexed (fn [i a] (merge a {:id (inc i)})) patients)]
       (sql/insert-multi! @datasource :patients (-> entities first keys vec) (vec (map vals entities)))
-
       (is (= (parse-json (:body @(request {:url url-patients :method :get})))
              {:data enumerated :count (count enumerated)})))))
 
 ;; POST /patients
 (deftest patients-create
-  (testing "Create patient successfully with valid patient data"
+  (testing "Create properly"
     (let [patient (gen-patient)]
       @(request {:url url-patients
                  :method :post
                  :body (json/generate-string patient)})
-
       (is (= (update (jdbc/execute-one! (ds-conf @datasource) ["SELECT * FROM patients WHERE id = 1;"]) :birth_date #(.toString %))
              (merge patient {:id 1}))))))
 
 (deftest patients-create-response
-  (testing "Return created patient"
+  (testing "Return created"
     (let [patient (gen-patient)
           response @(request {:url url-patients
                               :method :post
@@ -101,35 +99,31 @@
           response @(request {:url url-patients
                               :method :post
                               :body (json/generate-string invalid)})]
-
       (is (= (:status response) 400))
       (is (s/valid? ::server/server-error (parse-json (:body response)))))))
 
 ;; GET /patients/:id
 (deftest patients-get
-  (testing "204 for non existent user"
-    (is (= (:status @(request {:url (url-patient 1) :method :get}))
-           204)))
+  (testing "204 when non existent"
+    (is (= (:status @(request {:url (url-patient 1) :method :get})) 204)))
 
-  (testing "Getting user data for the existing user"
+  (testing "Get one properly"
     (let [patient (gen-patient)]
       (sql/insert! @datasource :patients (s/conform ::domain/patient patient))
-
       (is (= (parse-json (:body @(request {:url (url-patient 1) :method :get})))
              (merge patient {:id 1}))))))
 
 ;; PATCH /patients/:id
 (deftest patients-update
-  (testing "404 when attempting to update non existent patient"
+  (testing "404 when attempting to update non existent entry"
     (let [response @(request {:url (url-patient 1)
                               :method :patch
                               :body (json/generate-string (gen-patient))})]
       (is (= (:status response) 404))
       (is (empty? (:body response)))))
 
-  (testing "Proper update"
+  (testing "Update properly"
     (sql/insert! @datasource :patients (gen-patient-entity))
-
     (let [response @(request {:url (url-patient 1)
                               :method :patch
                               :body (json/generate-string (gen-patient))})]
@@ -152,14 +146,13 @@
 
 ;; DELETE /patients/:id
 (deftest patients-delete
-  (testing "404 when trying to delete non existent patient"
+  (testing "404 when attempting to delete non existent entry"
     (let [response @(request {:url (url-patient 1) :method :delete})]
       (is (= (:status response) 404))
       (is (empty? (:body response)))))
 
-  (testing "204 when trying to delete an existing patient"
+  (testing "Delete properly"
     (sql/insert! @datasource :patients (gen-patient-entity))
-
     (let [response @(request {:url (url-patient 1) :method :delete})]
       (is (= (:status response) 204))
       (is (empty? (:body response))))))
