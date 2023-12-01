@@ -5,11 +5,7 @@
    [challenge.frontend.view :as view]))
 
 (def routes
-  [["/"
-    {:name :home-page
-     :view view/home-page}]
-
-   ["/patients"
+  [["/patients"
     {:name :patients-list
      :view view/patients-list
      :controllers

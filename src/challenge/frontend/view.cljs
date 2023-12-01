@@ -5,18 +5,19 @@
    [challenge.frontend.events :as events]
    [challenge.frontend.subs :as subs]))
 
+(defn nav-item [route text]
+  [:li
+   [:a.block.py-2.px-4.rounded.bg-orange-600.hover:bg-orange-700.text-white.font-medium
+    {:href (rfe/href route)} text]])
+
 (defn main-page []
   (let [current-route @(reframe/subscribe [::subs/current-route])]
-    [:div
-     [:ul
-      [:li [:a {:href (rfe/href :home-page)} "Home page"]]
-      [:li [:a {:href (rfe/href :patients-list)} "Patients list"]]
-      [:li [:a {:href (rfe/href :patient-create)} "Patient create"]]]
+    [:div.container.mx-auto.px-4
+     [:ul.flex.items-center.space-x-4.py-4
+      [nav-item :patients-list "Patients list"]
+      [nav-item :patient-create "Patient create"]]
      (when current-route
        [(-> current-route :data :view)])]))
-
-(defn home-page []
-  [:h2 "Home"])
 
 (defn patient-row [p tag]
   [:<>
