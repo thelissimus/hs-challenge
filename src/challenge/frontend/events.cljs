@@ -3,6 +3,7 @@
    [re-frame.core :as reframe]
    [superstructor.re-frame.fetch-fx]
    [reitit.frontend.controllers :refer [apply-controllers]]
+   [challenge.frontend.env :refer [config]]
    [challenge.frontend.lib :refer [clj->json]]))
 
 ;;; state
@@ -48,7 +49,7 @@
  ::fetch-patients-list
  (fn [_ _]
    {:fetch {:method                 :get
-            :url                    "http://localhost:8080/patients"
+            :url                    (str (:backend-url config) "/patients")
             :mode                   :cors
             :timeout                5000
             :response-content-types {#"application/.*json" :json}
@@ -71,7 +72,7 @@
  (fn [{:keys [db]} _]
    {:fetch {:method                 :post
             :body                   (clj->json (:form-patient-create db))
-            :url                    "http://localhost:8080/patients"
+            :url                    (str (:backend-url config) "/patients")
             :mode                   :cors
             :timeout                5000
             :response-content-types {#"application/.*json" :json}
@@ -92,7 +93,7 @@
  ::fetch-patient-current
  (fn [_ [_ id]]
    {:fetch {:method                 :get
-            :url                    (str "http://localhost:8080/patients/" id)
+            :url                    (str (:backend-url config) "/patients/" id)
             :mode                   :cors
             :timeout                5000
             :response-content-types {#"application/.*json" :json}
@@ -112,7 +113,7 @@
  ::fetch-patient-current-update
  (fn [_ [_ id]]
    {:fetch {:method                 :get
-            :url                    (str "http://localhost:8080/patients/" id)
+            :url                    (str (:backend-url config) "/patients/" id)
             :mode                   :cors
             :timeout                5000
             :response-content-types {#"application/.*json" :json}
@@ -136,7 +137,7 @@
    (let [form (:form-patient-update db)]
      {:fetch {:method                 :patch
               :body                   (clj->json (dissoc form :id))
-              :url                    (str "http://localhost:8080/patients/" (:id form))
+              :url                    (str (:backend-url config) "/patients/" (:id form))
               :mode                   :cors
               :timeout                5000
               :response-content-types {#"application/.*json" :json}
@@ -157,7 +158,8 @@
  ::delete-patient
  (fn [{:keys [db]} _]
    {:fetch {:method                 :delete
-            :url                    (str "http://localhost:8080/patients/"
+            :url                    (str (:backend-url config)
+                                         "/patients/"
                                          (get-in db [:form-patient-update :id]))
             :mode                   :cors
             :timeout                5000

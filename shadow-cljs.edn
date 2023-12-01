@@ -18,6 +18,7 @@
     {:closure-defines
      {re-frame.trace.trace-enabled? true
       day8.re-frame.tracing.trace-enabled? true}}}
+   :build-hooks [(challenge.frontend.build/load-config)]
    :release
    {:build-options
     {:ns-aliases
