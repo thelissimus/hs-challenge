@@ -73,12 +73,12 @@
   ([key placeholder attrs]
    [input-view key :form-patient-update placeholder attrs]))
 
-(defn select-view [key form placeholder options]
-  [:select {:value     @(reframe/subscribe [::subs/form form key])
-            :on-change #(reframe/dispatch [::events/update-form
-                                           form
-                                           key
-                                           (-> % .-target .-value)])}
+(defn select-view [key form placeholder options attrs]
+  [:select (merge {:value     @(reframe/subscribe [::subs/form form key])
+                   :on-change #(reframe/dispatch [::events/update-form
+                                                  form
+                                                  key
+                                                  (-> % .-target .-value)])} attrs)
    [:option {:selected "selected" :disabled true :hidden true} placeholder]
    (for [{:keys [value label]} options]
      [:option {:key value :value value} label])])
@@ -86,8 +86,12 @@
 (defn select-create [key placeholder options]
   [select-view key :form-patient-create placeholder options])
 
-(defn select-update [key placeholder options]
-  [select-view key :form-patient-update placeholder options])
+(defn select-update
+  ([key placeholder options]
+   [select-view key :form-patient-update placeholder options {}])
+
+  ([key placeholder options attrs]
+   [select-view key :form-patient-update placeholder options attrs]))
 
 (defn patient-create []
   [:form {:on-submit (fn [event] (.preventDefault event))}
@@ -105,21 +109,31 @@
 (defn patient-info []
   (let [patient @(reframe/subscribe [::subs/patient-current])]
     [patient-row patient :div]))
-
 (defn patient-edit []
-  [:form {:on-submit (fn [event] (.preventDefault event))}
-   [input-update :first_name "First name"]
-   [input-update :middle_name "Middle name"]
-   [input-update :last_name "Last name"]
-   [select-update :sex "Sex" [{:value "male" :label "Male"}
-                              {:value "female" :label "Female"}]]
-   [input-update :birth_date "Birth date" {:type "date"}]
-   [input-update :address "Address"]
-   [input-update :insurance "Insurance"]
-   [:button {:type "button"
-             :on-click #(reframe/dispatch [::events/save-form-patient-update])}
-    "Update"]
-   [:button {:type "button"
-             :on-click #(do (reframe/dispatch [::events/delete-patient])
-                            (rfe/push-state :patients-list))}
-    "Delete"]])
+  (let [input-attrs {:class "form-input mb-4 w-full"}
+        select-attrs {:class "form-select mb-4 w-full"}
+        button-class "mb-4 w-full px-4 py-2 rounded"
+        primary-btn-attrs {:class (str "btn btn-primary bg-green-400 hover:bg-green-600 text-white" button-class)}
+        danger-btn-attrs {:class (str "btn btn-danger bg-red-400 hover:bg-red-600 text-white" button-class)}]
+    [:form.form.mx-auto.w-full.max-w-md.flex.flex-col.items-start
+     {:on-submit (fn [event] (.preventDefault event))}
+     [input-update :first_name "First name" input-attrs]
+     [input-update :middle_name "Middle name" input-attrs]
+     [input-update :last_name "Last name" input-attrs]
+     [select-update :sex "Sex" [{:value "male" :label "Male"}
+                                {:value "female" :label "Female"}]
+      select-attrs]
+     [input-update :birth_date "Birth date" (merge {:type "date"} input-attrs)]
+     [input-update :address "Address" input-attrs]
+     [input-update :insurance "Insurance" input-attrs]
+     [:button
+      (merge primary-btn-attrs
+             {:type "button"
+              :on-click #(reframe/dispatch [::events/save-form-patient-update])})
+      "Update"]
+     [:button
+      (merge danger-btn-attrs
+             {:type "button"
+              :on-click #(do (reframe/dispatch [::events/delete-patient])
+                             (rfe/push-state :patients-list))})
+      "Delete"]]))

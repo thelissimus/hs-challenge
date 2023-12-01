@@ -9,6 +9,7 @@
 		"build-report": "npx shadow-cljs run shadow.cljs.build-report frontend target/build-report.html"
 	},
 	"devDependencies": {
+		"@tailwindcss/forms": "^0.5.7",
 		"shadow-cljs": "2.25.8",
 		"tailwindcss": "^3.3.5"
 	},
