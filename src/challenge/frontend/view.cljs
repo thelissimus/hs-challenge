@@ -1,49 +1,52 @@
 (ns challenge.frontend.view
   (:require
+   [clojure.string :refer [capitalize]]
    [re-frame.core :as reframe]
    [reitit.frontend.easy :as rfe]
    [challenge.frontend.events :as events]
    [challenge.frontend.subs :as subs]))
 
-(defn nav-item [route text]
-  [:li
-   [:a.block.py-2.px-4.rounded.bg-orange-600.hover:bg-orange-700.text-white.font-medium
-    {:href (rfe/href route)} text]])
-
 (defn main-page []
-  (let [current-route @(reframe/subscribe [::subs/current-route])]
-    [:div.container.mx-auto.px-4
-     [:ul.flex.items-center.space-x-4.py-4
-      [nav-item :patients-list "Patients list"]
-      [nav-item :patient-create "Patient create"]]
-     (when current-route
-       [(-> current-route :data :view)])]))
+  (letfn [(li [route text]
+            [:li [:a.block.py-2.px-4.rounded.bg-orange-600.hover:bg-orange-700.text-white.font-medium
+                  {:href (rfe/href route)} text]])]
+    (let [current-route @(reframe/subscribe [::subs/current-route])]
+      [:div.container.mx-auto.px-4
+       [:ul.flex.items-center.space-x-4.py-4
+        [li :patients-list "Patients list"]
+        [li :patient-create "Patient create"]]
+       (when current-route
+         [(-> current-route :data :view)])])))
 
 (defn patient-row [p tag]
   [:<>
    [tag (:id p)]
    [tag (str (:first_name p) " " (:middle_name p) " " (:last_name p))]
-   [tag (:sex p)]
+   [tag (capitalize (:sex p))]
    [tag (:birth_date p)]
    [tag (:address p)]
    [tag (:insurance p)]
-   [tag [:a {:href (rfe/href :patient-edit {:id (:id p)})} "Edit"]]])
+   [tag [:a.py-2.px-4.hover:bg-orange-500 {:href (rfe/href :patient-edit {:id (:id p)})} "Edit"]]])
 
 (defn patients-list []
-  [:h2 "Patients list"]
-  (let [patients @(reframe/subscribe [::subs/patients-list])]
-    [:table
-     [:thead
-      [:tr
-       [:th "#"]
-       [:th "Full name"]
-       [:th "Sex"]
-       [:th "Birth date"]
-       [:th "Address"]
-       [:th "Insurance"]]]
-     [:tbody
-      (for [p patients]
-        [:tr {:key (:id p)} (patient-row p :td)])]]))
+  (letfn [(th [text]
+            [:th.border.border-slate-600.py-2.px-4.text-center text])]
+    (let [patients @(reframe/subscribe [::subs/patients-list])]
+      [:table.w-full.table-auto.border-collapse.border.border-slate-500
+       [:thead.bg-orange-600.text-white
+        [:tr
+         [th "#"]
+         [th "Full name"]
+         [th "Sex"]
+         [th "Birth date"]
+         [th "Address"]
+         [th "Insurance"]
+         [th "Actions"]]]
+       [:tbody
+        (for [p patients]
+          [:tr.odd:bg-white.even:bg-slate-100.hover:bg-orange-100
+           {:key (:id p)}
+           (patient-row p :td.border.border-slate-700.p-2.text-left.first:text-center.last:text-center)])]])))
 
 (defn input-view [key form placeholder attrs]
   [:<>
