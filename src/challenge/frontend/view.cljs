@@ -90,42 +90,36 @@
   [select-view key :form-patient-update placeholder options])
 
 (defn patient-create []
-  [:<>
-   [:h2 "Patient create"]
-   [:form {:on-submit (fn [event] (.preventDefault event))}
-    [input-create :first_name "First name"]
-    [input-create :middle_name "Middle name"]
-    [input-create :last_name "Last name"]
-    [select-create :sex "Sex" [{:value "male" :label "Male"}
-                               {:value "female" :label "Female"}]]
-    [input-create :birth_date "Birth date" {:type "date"}]
-    [input-create :address "Address"]
-    [input-create :insurance "Insurance"]
-    [:button {:type "button"
-              :on-click #(reframe/dispatch [::events/save-form-patient-create])} "Create"]]])
+  [:form {:on-submit (fn [event] (.preventDefault event))}
+   [input-create :first_name "First name"]
+   [input-create :middle_name "Middle name"]
+   [input-create :last_name "Last name"]
+   [select-create :sex "Sex" [{:value "male" :label "Male"}
+                              {:value "female" :label "Female"}]]
+   [input-create :birth_date "Birth date" {:type "date"}]
+   [input-create :address "Address"]
+   [input-create :insurance "Insurance"]
+   [:button {:type "button"
+             :on-click #(reframe/dispatch [::events/save-form-patient-create])} "Create"]])
 
 (defn patient-info []
   (let [patient @(reframe/subscribe [::subs/patient-current])]
-    [:<>
-     [:h2 "Patient info"]
-     [patient-row patient :div]]))
+    [patient-row patient :div]))
 
 (defn patient-edit []
-  [:<>
-   [:h2 "Patient edit"]
-   [:form {:on-submit (fn [event] (.preventDefault event))}
-    [input-update :first_name "First name"]
-    [input-update :middle_name "Middle name"]
-    [input-update :last_name "Last name"]
-    [select-update :sex "Sex" [{:value "male" :label "Male"}
-                               {:value "female" :label "Female"}]]
-    [input-update :birth_date "Birth date" {:type "date"}]
-    [input-update :address "Address"]
-    [input-update :insurance "Insurance"]
-    [:button {:type "button"
-              :on-click #(reframe/dispatch [::events/save-form-patient-update])}
-     "Update"]
-    [:button {:type "button"
-              :on-click #(do (reframe/dispatch [::events/delete-patient])
-                             (rfe/push-state :patients-list))}
-     "Delete"]]])
+  [:form {:on-submit (fn [event] (.preventDefault event))}
+   [input-update :first_name "First name"]
+   [input-update :middle_name "Middle name"]
+   [input-update :last_name "Last name"]
+   [select-update :sex "Sex" [{:value "male" :label "Male"}
+                              {:value "female" :label "Female"}]]
+   [input-update :birth_date "Birth date" {:type "date"}]
+   [input-update :address "Address"]
+   [input-update :insurance "Insurance"]
+   [:button {:type "button"
+             :on-click #(reframe/dispatch [::events/save-form-patient-update])}
+    "Update"]
+   [:button {:type "button"
+             :on-click #(do (reframe/dispatch [::events/delete-patient])
+                            (rfe/push-state :patients-list))}
+    "Delete"]])
