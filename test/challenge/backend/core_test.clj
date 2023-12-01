@@ -53,9 +53,9 @@
   (mount/stop))
 
 (defn reset-database [tests]
-  (jdbc/execute! datasource [(slurp (io/resource "schema.sql"))])
+  (jdbc/execute! datasource [(slurp (io/resource "schema/schema.sql"))])
   (tests)
-  (jdbc/execute! datasource [(slurp (io/resource "down.sql"))]))
+  (jdbc/execute! datasource [(slurp (io/resource "schema/down.sql"))]))
 
 (use-fixtures :once setup-server)
 (use-fixtures :each reset-database)
