@@ -7,7 +7,7 @@
  :builds
  {:frontend
   {:target :browser
-   :output-dir "resources/public/js/compiled"
+   :output-dir "resources/public/assets/js/compiled"
    :asset-path "/js/compiled"
    :modules
    {:main {:init-fn challenge.frontend.core/init}}
