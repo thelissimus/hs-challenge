@@ -16,6 +16,8 @@
                  [com.taoensso/timbre "6.2.2"]
                  [clojure.java-time "1.3.0"]
                  [cheshire "5.12.0"]
+                 [aero "1.1.6"]
+                 [expound "0.9.0"]
                  ;; frontend
                  [reagent "1.2.0"]
                  [re-frame "1.3.0"]
