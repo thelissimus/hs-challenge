@@ -17,6 +17,7 @@
                  [clojure.java-time "1.3.0"]
                  [cheshire "5.12.0"]
                  [aero "1.1.6"]
+                 [mount "0.1.17"]
                  [expound "0.9.0"]
                  ;; frontend
                  [reagent "1.2.0"]

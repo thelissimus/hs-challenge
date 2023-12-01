@@ -11,4 +11,4 @@
                 :dbname "challenge_test"
                 :host "localhost"
                 :username "postgres"
-                :password [#env DB_TEST_PASSWORD ""]}}}
+                :password #or [#env DB_TEST_PASSWORD ""]}}}
