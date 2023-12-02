@@ -1,22 +1,26 @@
 (ns challenge.frontend.routes
   (:require
    [re-frame.core :as reframe]
-   [challenge.frontend.events :as events]))
+   [challenge.frontend.events :as events]
+   [challenge.frontend.view.patients.create :refer [create]]
+   [challenge.frontend.view.patients.edit :refer [edit]]
+   [challenge.frontend.view.patients.index :refer [table]]
+   [challenge.frontend.view.patients.show :refer [show]]))
 
 (def routes
   [["/patients"
     {:name :patients-list
-     :view challenge.frontend.view.patients.index/table
+     :view table
      :controllers
      [{:start (fn [] (reframe/dispatch [::events/fetch-patients-list]))}]}]
 
    ["/patients/create"
     {:name :patient-create
-     :view challenge.frontend.view.patients.create/create}]
+     :view create}]
 
    ["/patients/show/:id"
     {:name :patient-info
-     :view challenge.frontend.view.patients.show/show
+     :view show
      :parameters {:path {:id int?}}
      :controllers
      [{:parameters {:path [:id]}
@@ -24,7 +28,7 @@
 
    ["/patients/edit/:id"
     {:name :patient-edit
-     :view challenge.frontend.view.patients.edit/edit
+     :view edit
      :parameters {:path {:id int?}}
      :controllers
      [{:parameters {:path [:id]}

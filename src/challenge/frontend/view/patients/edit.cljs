@@ -5,7 +5,7 @@
    [challenge.frontend.events :as events]
    [challenge.frontend.common.form :refer [input-view select-view]]))
 
-(defn- input-update [key placeholder attrs]
+(defn- input [key placeholder attrs]
   [input-view key :form-patient-update placeholder attrs])
 
 (defn edit []
@@ -16,9 +16,9 @@
         danger-btn-attrs {:class (str "btn btn-danger bg-red-400 hover:bg-red-600 text-white" button-class)}]
     [:form.form.mx-auto.w-full.max-w-md.flex.flex-col.items-start
      {:on-submit (fn [event] (.preventDefault event))}
-     [input-update :first_name "First name" input-attrs]
-     [input-update :middle_name "Middle name" input-attrs]
-     [input-update :last_name "Last name" input-attrs]
+     [input :first_name "First name" input-attrs]
+     [input :middle_name "Middle name" input-attrs]
+     [input :last_name "Last name" input-attrs]
      [select-view
       :sex
       :form-patient-update
@@ -26,9 +26,9 @@
       [{:value "male" :label "Male"}
        {:value "female" :label "Female"}]
       select-attrs]
-     [input-update :birth_date "Birth date" (merge {:type "date"} input-attrs)]
-     [input-update :address "Address" input-attrs]
-     [input-update :insurance "Insurance" input-attrs]
+     [input :birth_date "Birth date" (merge {:type "date"} input-attrs)]
+     [input :address "Address" input-attrs]
+     [input :insurance "Insurance" input-attrs]
      [:button
       (merge primary-btn-attrs
              {:type "button"
