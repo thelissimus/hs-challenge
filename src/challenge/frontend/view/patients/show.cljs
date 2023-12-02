@@ -4,6 +4,6 @@
    [challenge.frontend.subs :as subs]
    [challenge.frontend.view.patients.common :refer [patient-row]]))
 
-(defn patient-info []
+(defn show []
   (let [patient @(reframe/subscribe [::subs/patient-current])]
     [patient-row patient :div]))
