@@ -2,22 +2,25 @@
   (:require
    [re-frame.core :as reframe]
    [challenge.frontend.events :as events]
-   [challenge.frontend.view :as view]))
+   [challenge.frontend.view.patients.create :refer [patient-create]]
+   [challenge.frontend.view.patients.index :refer [patients-list]]
+   [challenge.frontend.view.patients.show :refer [patient-info]]
+   [challenge.frontend.view.patients.update :refer [patient-edit]]))
 
 (def routes
   [["/patients"
     {:name :patients-list
-     :view view/patients-list
+     :view patients-list
      :controllers
      [{:start (fn [] (reframe/dispatch [::events/fetch-patients-list]))}]}]
 
    ["/patients/create"
     {:name :patient-create
-     :view view/patient-create}]
+     :view patient-create}]
 
    ["/patients/show/:id"
     {:name :patient-info
-     :view view/patient-info
+     :view patient-info
      :parameters {:path {:id int?}}
      :controllers
      [{:parameters {:path [:id]}
@@ -25,7 +28,7 @@
 
    ["/patients/edit/:id"
     {:name :patient-edit
-     :view view/patient-edit
+     :view patient-edit
      :parameters {:path {:id int?}}
      :controllers
      [{:parameters {:path [:id]}

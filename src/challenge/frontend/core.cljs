@@ -6,7 +6,7 @@
    [reitit.frontend.easy :as rfe]
    [reitit.coercion.spec :as rcs]
    [challenge.frontend.events :as events]
-   [challenge.frontend.view :refer [main-page]]
+   [challenge.frontend.view.index :refer [main-page]]
    [challenge.frontend.routes :refer [routes]]))
 
 (defn ^:dev/after-load mount-root []
