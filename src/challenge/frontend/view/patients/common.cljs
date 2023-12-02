@@ -3,7 +3,7 @@
    [clojure.string :refer [capitalize]]
    [reitit.frontend.easy :as rfe]))
 
-(defn patient-row [p tag]
+(defn patient-view [p tag]
   [:<>
    [tag (:id p)]
    [tag (str (:first_name p) " " (:middle_name p) " " (:last_name p))]

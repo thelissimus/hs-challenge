@@ -2,7 +2,7 @@
   (:require
    [re-frame.core :as reframe]
    [challenge.frontend.subs :as subs]
-   [challenge.frontend.view.patients.common :refer [patient-row]]))
+   [challenge.frontend.view.patients.common :refer [patient-view]]))
 
 (defn table []
   (letfn [(th [text]
@@ -22,4 +22,4 @@
         (for [p patients]
           [:tr.odd:bg-white.even:bg-slate-100.hover:bg-orange-100
            {:key (:id p)}
-           (patient-row p :td.border.border-slate-700.p-2.text-left.first:text-center.last:text-center)])]])))
+           (patient-view p :td.border.border-slate-700.p-2.text-left.first:text-center.last:text-center)])]])))
