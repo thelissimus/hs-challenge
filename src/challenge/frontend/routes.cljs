@@ -2,7 +2,6 @@
   (:require
    [re-frame.core :as reframe]
    [challenge.frontend.events :as events]
-   [challenge.frontend.view.patients.create :refer [patient-create]]
    [challenge.frontend.view.patients.index :refer [patients-list]]
    [challenge.frontend.view.patients.show :refer [patient-info]]
    [challenge.frontend.view.patients.update :refer [patient-edit]]))
@@ -16,7 +15,7 @@
 
    ["/patients/create"
     {:name :patient-create
-     :view patient-create}]
+     :view challenge.frontend.view.patients.create/create}]
 
    ["/patients/show/:id"
     {:name :patient-info
