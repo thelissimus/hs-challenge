@@ -15,7 +15,7 @@
     {:name :patient-create
      :view view/patient-create}]
 
-   ["/patients/list/:id"
+   ["/patients/show/:id"
     {:name :patient-info
      :view view/patient-info
      :parameters {:path {:id int?}}
@@ -23,7 +23,7 @@
      [{:parameters {:path [:id]}
        :start (fn [{:keys [path]}] (reframe/dispatch [::events/fetch-patient-current (:id path)]))}]}]
 
-   ["/patients/list/:id/edit"
+   ["/patients/edit/:id"
     {:name :patient-edit
      :view view/patient-edit
      :parameters {:path {:id int?}}

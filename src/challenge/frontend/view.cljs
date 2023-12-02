@@ -109,6 +109,7 @@
 (defn patient-info []
   (let [patient @(reframe/subscribe [::subs/patient-current])]
     [patient-row patient :div]))
+
 (defn patient-edit []
   (let [input-attrs {:class "form-input mb-4 w-full"}
         select-attrs {:class "form-select mb-4 w-full"}
