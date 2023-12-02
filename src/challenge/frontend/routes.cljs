@@ -1,8 +1,7 @@
 (ns challenge.frontend.routes
   (:require
    [re-frame.core :as reframe]
-   [challenge.frontend.events :as events]
-   [challenge.frontend.view.patients.update :refer [patient-edit]]))
+   [challenge.frontend.events :as events]))
 
 (def routes
   [["/patients"
@@ -25,7 +24,7 @@
 
    ["/patients/edit/:id"
     {:name :patient-edit
-     :view patient-edit
+     :view challenge.frontend.view.patients.edit/edit
      :parameters {:path {:id int?}}
      :controllers
      [{:parameters {:path [:id]}

@@ -1,25 +1,14 @@
-(ns challenge.frontend.view.patients.update
+(ns challenge.frontend.view.patients.edit
   (:require
    [re-frame.core :as reframe]
    [reitit.frontend.easy :as rfe]
    [challenge.frontend.events :as events]
    [challenge.frontend.common.form :refer [input-view select-view]]))
 
-(defn input-update
-  ([key placeholder]
-   [input-update key placeholder {:type "text"}])
+(defn- input-update [key placeholder attrs]
+  [input-view key :form-patient-update placeholder attrs])
 
-  ([key placeholder attrs]
-   [input-view key :form-patient-update placeholder attrs]))
-
-(defn select-update
-  ([key placeholder options]
-   [select-view key :form-patient-update placeholder options {}])
-
-  ([key placeholder options attrs]
-   [select-view key :form-patient-update placeholder options attrs]))
-
-(defn patient-edit []
+(defn edit []
   (let [input-attrs {:class "form-input mb-4 w-full"}
         select-attrs {:class "form-select mb-4 w-full"}
         button-class "mb-4 w-full px-4 py-2 rounded"
@@ -30,8 +19,12 @@
      [input-update :first_name "First name" input-attrs]
      [input-update :middle_name "Middle name" input-attrs]
      [input-update :last_name "Last name" input-attrs]
-     [select-update :sex "Sex" [{:value "male" :label "Male"}
-                                {:value "female" :label "Female"}]
+     [select-view
+      :sex
+      :form-patient-update
+      "Sex"
+      [{:value "male" :label "Male"}
+       {:value "female" :label "Female"}]
       select-attrs]
      [input-update :birth_date "Birth date" (merge {:type "date"} input-attrs)]
      [input-update :address "Address" input-attrs]
