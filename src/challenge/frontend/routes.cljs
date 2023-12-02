@@ -2,14 +2,13 @@
   (:require
    [re-frame.core :as reframe]
    [challenge.frontend.events :as events]
-   [challenge.frontend.view.patients.index :refer [patients-list]]
    [challenge.frontend.view.patients.show :refer [patient-info]]
    [challenge.frontend.view.patients.update :refer [patient-edit]]))
 
 (def routes
   [["/patients"
     {:name :patients-list
-     :view patients-list
+     :view challenge.frontend.view.patients.index/table
      :controllers
      [{:start (fn [] (reframe/dispatch [::events/fetch-patients-list]))}]}]
 

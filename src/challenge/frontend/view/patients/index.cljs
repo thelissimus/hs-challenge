@@ -4,7 +4,7 @@
    [challenge.frontend.subs :as subs]
    [challenge.frontend.view.patients.common :refer [patient-row]]))
 
-(defn patients-list []
+(defn table []
   (letfn [(th [text]
             [:th.border.border-slate-600.py-2.px-4.text-center text])]
     (let [patients @(reframe/subscribe [::subs/patients-list])]
