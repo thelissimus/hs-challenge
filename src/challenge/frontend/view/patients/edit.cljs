@@ -15,7 +15,7 @@
         primary-btn-attrs {:class (str "btn btn-primary bg-green-400 hover:bg-green-600 text-white" button-class)}
         danger-btn-attrs {:class (str "btn btn-danger bg-red-400 hover:bg-red-600 text-white" button-class)}]
     [:form.form.mx-auto.w-full.max-w-md.flex.flex-col.items-start
-     {:on-submit (fn [event] (.preventDefault event))}
+     {:on-submit #(.preventDefault %)}
      [input :first_name "First name" input-attrs]
      [input :middle_name "Middle name" input-attrs]
      [input :last_name "Last name" input-attrs]
