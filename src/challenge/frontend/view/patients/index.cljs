@@ -16,9 +16,7 @@
   (letfn [(th [text]
             [:th.border.border-slate-600.py-2.px-4.text-center text])
           (td [text]
-            [:td.border.border-slate-700.p-2.text-left.first:text-center.last:text-center text])
-          (td* [& children]
-            [:td.border.border-slate-700.p-2.text-left.first:text-center.last:text-center children])]
+            [:td.border.border-slate-700.p-2.text-left.first:text-center.last:text-center text])]
     (let [patients @(reframe/subscribe [::subs/patients-list])]
       [:table.w-full.table-auto.border-collapse.border.border-slate-500
        [:thead.bg-orange-600.text-white
@@ -41,9 +39,7 @@
               [{:value male :label "Male"}
                {:value female :label "Female"}]
               {}]]
-         [td*
-          [input :birth-date-lower "Birth date lower" {:type "date"}]
-          [input :birth-date-upper "Birth date upper" {:type "date"}]]
+         [td [input :birth-date "Birth date" {:type "date"}]]
          [td [input :address "Address" {}]]
          [td [input :insurance "Insurance" {}]]
          [td [button {:on-click #(reframe/dispatch [::events/fetch-patients-list])} "Find"]]]

@@ -54,8 +54,7 @@
      (when-let [id (:id params)] (.append query "id" id))
      (when-let [name (:name params)] (.append query "name" name))
      (when-let [sex (:sex params)] (.append query "sex" sex))
-     (when-let [bdl (:birth-date-lower params)] (.append query "birth-date-lower" bdl))
-     (when-let [bdu (:birth-date-upper params)] (.append query "birth-date-upper" bdu))
+     (when-let [birth-date (:birth-date params)] (.append query "birth-date" birth-date))
      (when-let [address (:address params)] (.append query "address" address))
      (when-let [insurance (:insurance params)] (.append query "insurance" insurance))
      {:fetch {:method                 :get
