@@ -13,9 +13,9 @@
  (fn [_ _]
    {:current-route nil
     :patients-list []
-    :patient-current {}
-    :form-patient-create {}
-    :form-patient-update {}}))
+    :patient-current nil
+    :form-patient-create nil
+    :form-patient-update nil}))
 
 ;;; routing
 
