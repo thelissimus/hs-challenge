@@ -3,14 +3,22 @@
    [clojure.string :refer [capitalize]]
    [re-frame.core :as reframe]
    [reitit.frontend.easy :as rfe]
+   [challenge.common.domain :refer [male female]]
    [challenge.frontend.subs :as subs]
-   [challenge.frontend.common.link :refer [a]]))
+   [challenge.frontend.events :as events]
+   [challenge.frontend.common.link :refer [a button]]
+   [challenge.frontend.common.form :refer [input-view select-view]]))
+
+(defn- input [key placeholder attrs]
+  [input-view key :patients-query placeholder attrs])
 
 (defn table []
   (letfn [(th [text]
             [:th.border.border-slate-600.py-2.px-4.text-center text])
           (td [text]
-            [:td.border.border-slate-700.p-2.text-left.first:text-center.last:text-center text])]
+            [:td.border.border-slate-700.p-2.text-left.first:text-center.last:text-center text])
+          (td* [& children]
+            [:td.border.border-slate-700.p-2.text-left.first:text-center.last:text-center children])]
     (let [patients @(reframe/subscribe [::subs/patients-list])]
       [:table.w-full.table-auto.border-collapse.border.border-slate-500
        [:thead.bg-orange-600.text-white
@@ -23,6 +31,22 @@
          [th "Insurance"]
          [th "Actions"]]]
        [:tbody
+        [:tr
+         [td [input :id "ID" {}]]
+         [td [input :name "Full name" {}]]
+         [td [select-view
+              :sex
+              :patients-query
+              "Sex"
+              [{:value male :label "Male"}
+               {:value female :label "Female"}]
+              {}]]
+         [td*
+          [input :birth-date-lower "Birth date lower" {:type "date"}]
+          [input :birth-date-upper "Birth date upper" {:type "date"}]]
+         [td [input :address "Address" {}]]
+         [td [input :insurance "Insurance" {}]]
+         [td [button {:on-click #(reframe/dispatch [::events/fetch-patients-list])} "Find"]]]
         (for [p patients]
           [:tr.odd:bg-white.even:bg-gray-200.hover:bg-orange-100.hover:cursor-pointer
            {:key (:id p)

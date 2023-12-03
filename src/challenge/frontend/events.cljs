@@ -13,6 +13,7 @@
  (fn [_ _]
    {:current-route nil
     :patients-list []
+    :patients-query nil
     :patient-current nil
     :form-patient-create nil
     :form-patient-update nil}))
@@ -47,14 +48,26 @@
 
 (reframe/reg-event-fx
  ::fetch-patients-list
- (fn [_ _]
-   {:fetch {:method                 :get
-            :url                    (str (:backend-url config) "/patients")
-            :mode                   :cors
-            :timeout                5000
-            :response-content-types {#"application/.*json" :json}
-            :on-success             [::fetch-patients-list-ok]
-            :on-failure             [::fetch-patients-list-err]}}))
+ (fn [{:keys [db]} _]
+   (let [params (:patients-query db)
+         query (js/URLSearchParams.)]
+     (when-let [id (:id params)] (.append query "id" id))
+     (when-let [name (:name params)] (.append query "name" name))
+     (when-let [sex (:sex params)] (.append query "sex" sex))
+     (when-let [bdl (:birth-date-lower params)] (.append query "birth-date-lower" bdl))
+     (when-let [bdu (:birth-date-upper params)] (.append query "birth-date-upper" bdu))
+     (when-let [address (:address params)] (.append query "address" address))
+     (when-let [insurance (:insurance params)] (.append query "insurance" insurance))
+     {:fetch {:method                 :get
+              :url                    (str
+                                       (:backend-url config)
+                                       "/patients"
+                                       (if (empty? (.toString query)) "" (str "?" (.toString query))))
+              :mode                   :cors
+              :timeout                5000
+              :response-content-types {#"application/.*json" :json}
+              :on-success             [::fetch-patients-list-ok]
+              :on-failure             [::fetch-patients-list-err]}})))
 
 ;; POST patients/
 (reframe/reg-event-db
