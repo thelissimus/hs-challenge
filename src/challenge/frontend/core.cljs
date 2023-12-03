@@ -1,8 +1,8 @@
 (ns challenge.frontend.core
   (:require
-   [reagent.dom :as rdom]
+   [reagent.dom.client :refer [create-root render]]
    [re-frame.core :as reframe]
-   [reitit.frontend :as rf]
+   [reitit.frontend :refer [router]]
    [reitit.frontend.easy :as rfe]
    [reitit.coercion.spec :as rcs]
    [challenge.frontend.events :as events]
@@ -11,12 +11,10 @@
 
 (defn ^:dev/after-load mount-root []
   (reframe/clear-subscription-cache!)
-  (rfe/start! (rf/router routes {:data {:coercion rcs/coercion}})
+  (rfe/start! (router routes {:data {:coercion rcs/coercion}})
               (fn [m] (when m (reframe/dispatch [::events/navigated m])))
               {:use-fragment true})
-  (let [root (.getElementById js/document "app")]
-    (rdom/unmount-component-at-node root)
-    (rdom/render [main-page] root)))
+  (render (create-root (.getElementById js/document "app")) [main-page]))
 
 (defn init []
   (reframe/dispatch-sync [::events/init-db])
