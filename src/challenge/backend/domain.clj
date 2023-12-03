@@ -3,17 +3,18 @@
    [clojure.spec.alpha :as s]
    [clojure.spec.gen.alpha :as gen]
    [next.jdbc.types :as types]
-   [java-time.api :as time])
+   [java-time.api :as time]
+   [challenge.common.domain :refer [male female]])
   (:import (java.time.format DateTimeParseException)))
 
 (s/def ::first_name (s/and string? #(>= 255 (count %))))
 (s/def ::middle_name (s/and string? #(>= 255 (count %))))
 (s/def ::last_name (s/and string? #(>= 255 (count %))))
 (s/def ::sex (s/with-gen
-               (s/conformer #(if (contains? #{"male" "female"} %)
+               (s/conformer #(if (contains? #{male female} %)
                                (types/as-other %)
                                ::s/invalid))
-               #(gen/elements ["male" "female"])))
+               #(gen/elements [male female])))
 (s/def ::birth_date (s/with-gen
                       (s/conformer #(try (time/local-date %)
                                          (catch DateTimeParseException _ ::s/invalid)))

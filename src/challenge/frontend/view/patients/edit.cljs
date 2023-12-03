@@ -2,6 +2,7 @@
   (:require
    [re-frame.core :as reframe]
    [reitit.frontend.easy :as rfe]
+   [challenge.common.domain :refer [male female]]
    [challenge.frontend.events :as events]
    [challenge.frontend.common.form :refer [input-view select-view]]))
 
@@ -23,8 +24,8 @@
       :sex
       :form-patient-update
       "Sex"
-      [{:value "male" :label "Male"}
-       {:value "female" :label "Female"}]
+      [{:value male :label "Male"}
+       {:value female :label "Female"}]
       select-attrs]
      [input :birth_date "Birth date" (merge {:type "date"} input-attrs)]
      [input :address "Address" input-attrs]
