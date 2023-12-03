@@ -3,7 +3,8 @@
    [clojure.string :refer [capitalize]]
    [re-frame.core :as reframe]
    [reitit.frontend.easy :as rfe]
-   [challenge.frontend.subs :as subs]))
+   [challenge.frontend.subs :as subs]
+   [challenge.frontend.common.link :refer [a]]))
 
 (defn table []
   (letfn [(th [text]
@@ -32,4 +33,4 @@
            [td (:birth_date p)]
            [td (:address p)]
            [td (:insurance p)]
-           [td [:a.block.py-2.px-4.hover:bg-orange-500 {:href (rfe/href :patient-edit {:id (:id p)})} "Edit"]]])]])))
+           [td [a {:href (rfe/href :patient-edit {:id (:id p)})} "Edit"]]])]])))
