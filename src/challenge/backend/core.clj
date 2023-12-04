@@ -25,3 +25,11 @@
    (do
      (error (expound-str ::config/config cfg {:print-specs? false}))
      (System/exit 1))))
+
+(comment
+  (def cfg (s/conform ::config/config (read-config (io/resource "config/backend.edn") {:profile :default})))
+  (def ds (->pool HikariDataSource (:db cfg)))
+  (def server (run-server (server/app ds) {:port (:port cfg)}))
+  (server)
+  (.close ds)
+  :rcf)

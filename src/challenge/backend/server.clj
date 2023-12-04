@@ -18,8 +18,7 @@
    [next.jdbc.sql :as sql]
    [next.jdbc.sql.builder :as builder]))
 
-;;; data
-
+;;; Data
 (defrecord ServerError [message])
 
 (s/def ::message (s/and string? #(< 0 (count %))))
@@ -39,8 +38,7 @@
     (dissoc $ :birth-date)
     (if (empty? birth-date) $ (assoc $ :birth_date birth-date))))
 
-;;; utils
-
+;;; Utils
 (add-encoder java.time.LocalDate
              (fn [c jsonGen] (.writeString jsonGen (.toString c))))
 
@@ -51,8 +49,7 @@
 (defn parse-json-body [req]
   (some-> req :body (io/reader :encoding "UTF-8") lib/parse-json-stream))
 
-;;; endpoints
-
+;;; Endpoints
 (defn patients-get-all [ds]
   (fn
     ([]
@@ -96,8 +93,7 @@
         {:status 404}
         {:status 204}))))
 
-;;; router
-
+;;; Router
 (defn app [ds]
   (let [ds (jdbc/with-options ds {:builder-fn as-unqualified-lower-maps})]
     (read-as-local)
