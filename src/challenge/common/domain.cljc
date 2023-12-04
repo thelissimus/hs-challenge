@@ -1,4 +1,4 @@
 (ns challenge.common.domain)
 
-(def male "male")
-(def female "female")
+(def ^:const male "male")
+(def ^:const female "female")
