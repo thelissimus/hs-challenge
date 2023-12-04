@@ -73,7 +73,11 @@
           enumerated (map-indexed (fn [i a] (merge a {:id (inc i)})) patients)]
       (sql/insert-multi! datasource :patients (-> entities first keys vec) (vec (map vals entities)))
       (is (= (parse-json (:body @(request {:url url-patients :method :get})))
-             {:data enumerated :count (count enumerated)})))))
+             {:data enumerated :count (count enumerated)}))))
+
+  (testing "Get all in ascending order by id"
+    (is (= (map #(:id %) (:data (parse-json (:body @(request {:url url-patients :method :get})))))
+           (range 1 6)))))
 
 ;; POST /patients
 (deftest patients-create

@@ -55,12 +55,12 @@
     ([]
      {:status 200
       :headers {"Content-Type" "application/json"}
-      :body (let [res (sql/query ds ["SELECT * FROM patients;"])]
+      :body (let [res (sql/query ds ["SELECT * FROM patients ORDER BY id ASC;"])]
               (json/generate-string {:data res :count (count res)}))})
     ([where]
      {:status 200
       :headers {"Content-Type" "application/json"}
-      :body (let [res (sql/query ds (builder/for-query :patients where {}))]
+      :body (let [res (sql/query ds (builder/for-query :patients where {:order-by [:id]}))]
               (json/generate-string {:data res :count (count res)}))})))
 
 (defn patients-add [ds]
