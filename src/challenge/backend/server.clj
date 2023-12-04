@@ -6,13 +6,17 @@
    [cheshire.generate :refer [add-encoder]]
    [clojure.java.io :as io]
    [clojure.spec.alpha :as s]
+   [clojure.walk :refer [keywordize-keys]]
    [compojure.core :refer [context DELETE GET PATCH POST routes]]
    [compojure.middleware :refer [wrap-canonical-redirect]]
    [java-time.api :as time]
    [jumblerg.middleware.cors :refer [wrap-cors]]
+   [ring.middleware.params :refer [wrap-params]]
    [next.jdbc :as jdbc]
    [next.jdbc.result-set :refer [as-unqualified-lower-maps]]
-   [next.jdbc.sql :as sql]))
+   [next.jdbc.date-time :refer [read-as-local]]
+   [next.jdbc.sql :as sql]
+   [next.jdbc.sql.builder :as builder]))
 
 ;;; data
 
@@ -24,14 +28,25 @@
                                         (catch NumberFormatException _ ::s/invalid))))
 (s/def ::non-empty-map (s/and map? not-empty))
 
+(s/def ::id (s/and string? ::string->int))
+(s/def ::patient-query-params
+  (s/and (s/keys :opt-un [::id ::domain/sex ::domain/birth_date ::domain/address ::domain/insurance])
+         #(every? #{:id :sex :birth_date :address :insurance} (keys %))))
+
+(defn params->patient [{:keys [name birth-date] :as params}]
+  (as-> params $
+    (dissoc $ :name)
+    (dissoc $ :birth-date)
+    (if (empty? birth-date) $ (assoc $ :birth_date birth-date))))
+
 ;;; utils
 
 (add-encoder java.time.LocalDate
              (fn [c jsonGen] (.writeString jsonGen (.toString c))))
 
-(defn validation-err [err]
+(defn validation-err [message]
   {:status 400
-   :body (json/generate-string err)})
+   :body (json/generate-string (->ServerError message))})
 
 (defn parse-json-body [req]
   (some-> req :body (io/reader :encoding "UTF-8") lib/parse-json-stream))
@@ -39,12 +54,17 @@
 ;;; endpoints
 
 (defn patients-get-all [ds]
-  (fn [_]
-    {:status 200
-     :headers {"Content-Type" "application/json"}
-     :body (let [res (sql/query ds ["SELECT * FROM patients;"])]
-             (json/generate-string {:data  (map (fn [a] (update a :birth_date #(time/local-date %))) res)
-                                    :count (count res)}))}))
+  (fn
+    ([]
+     {:status 200
+      :headers {"Content-Type" "application/json"}
+      :body (let [res (sql/query ds ["SELECT * FROM patients;"])]
+              (json/generate-string {:data res :count (count res)}))})
+    ([where]
+     {:status 200
+      :headers {"Content-Type" "application/json"}
+      :body (let [res (sql/query ds (builder/for-query :patients where {}))]
+              (json/generate-string {:data res :count (count res)}))})))
 
 (defn patients-add [ds]
   (fn [patient]
@@ -80,14 +100,19 @@
 
 (defn app [ds]
   (let [ds (jdbc/with-options ds {:builder-fn as-unqualified-lower-maps})]
+    (read-as-local)
     (routes
      (-> (context "/patients" []
-           (GET  "/" []  (patients-get-all ds))
+           (GET "/" req
+             (conform-let [params (s/conform (s/and ::non-empty-map ::patient-query-params)
+                                             (params->patient (keywordize-keys (:params req))))]
+                          ((patients-get-all ds) params)
+                          ((patients-get-all ds))))
            (POST "/" req
              (conform-let* [body (parse-json-body req)
                             pat (s/conform ::domain/patient body)]
                            ((patients-add ds) pat)
-                           (validation-err (->ServerError (s/explain-str ::domain/patient body)))))
+                           (validation-err (s/explain-str ::domain/patient body))))
            (context "/:id" [id]
              (GET "/" []
                (conform-let [id_ (s/conform ::string->int id)]
@@ -98,10 +123,11 @@
                               id_ (s/conform ::string->int id)
                               pat (s/conform (s/and ::domain/patient-partial ::non-empty-map) body)]
                              ((patients-update ds) id_ pat)
-                             (validation-err (->ServerError (s/explain-str ::domain/patient-partial body)))))
+                             (validation-err (s/explain-str ::domain/patient-partial body))))
              (DELETE "/" []
                (conform-let [id (s/conform ::string->int id)]
                             ((patients-delete ds) id)
                             nil))))
          (wrap-canonical-redirect)
+         (wrap-params)
          (wrap-cors identity)))))
