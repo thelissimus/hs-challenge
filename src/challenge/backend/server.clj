@@ -61,15 +61,18 @@
      {:status 200
       :headers {"Content-Type" "application/json"}
       :body (let [clauses (dissoc where :name)
+                  name (:name where)
                   name-query "CONCAT(first_name, ' ', middle_name, ' ', last_name) ILIKE '%' || ? || '%'"
                   query
                   (if (empty? clauses)
                     [(str "SELECT * FROM patients WHERE " name-query) (:name where)]
-                    (conj (builder/for-query
-                           :patients
-                           clauses
-                           {:suffix (str "AND " name-query " ORDER BY id ASC;")})
-                          (:name where)))
+                    (if name
+                      (conj (builder/for-query
+                             :patients
+                             clauses
+                             {:suffix (str "AND " name-query " ORDER BY id ASC;")})
+                            (:name where))
+                      (builder/for-query :patients clauses {})))
                   res (sql/query ds query)]
               (json/generate-string {:data res :count (count res)}))})))
 

@@ -7,7 +7,7 @@
    [clojure.spec.gen.alpha :as gen]
    [aero.core :refer [read-config]]
    [cheshire.core :as json]
-   [lambdaisland.uri :refer [uri uri-str]]
+   [lambdaisland.uri :refer [assoc-query uri uri-str]]
    [org.httpkit.server :refer [run-server]]
    [org.httpkit.client :refer [request]]
    [next.jdbc :as jdbc]
@@ -90,6 +90,46 @@
   (testing "Get all in ascending order by id"
     (is (= (map #(:id %) (:data (parse-json (:body @(request {:url (uri-str url-patients) :method :get})))))
            (range 1 6)))))
+
+(deftest patients-get-all-filter
+  (let [patients (repeat 5 (gen-patient))
+        entities (map patient->entity patients)]
+    (sql/insert-multi! datasource :patients (-> entities first keys vec) (vec (map vals entities)))
+
+    (testing "Filter by id"
+      (let [response (parse-json (:body @(request {:url (-> url-patients (assoc-query :id 1) uri-str) :method :get})))]
+        (is (= (:count response) 1))
+        (is (= (-> response :data first :id) 1))))
+
+    (testing "Filter by name"
+      (is false))
+
+    (testing "Filter by name (case insensitive)"
+      (is false))
+
+    (testing "Filter by name (partial)"
+      (is false))
+
+    (testing "Filter by sex"
+      (is false))
+
+    (testing "Filter by birth date"
+      (is false))
+
+    (testing "Filter by address"
+      (is false))
+
+    (testing "Filter by address (case insensitive)"
+      (is false))
+
+    (testing "Filter by address (partial)"
+      (is false))
+
+    (testing "Filter by insurance"
+      (is false))
+
+    (testing "Filter by insurance (partial)"
+      (is false))))
 
 ;; POST /patients
 (deftest patients-create
