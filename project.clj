@@ -19,6 +19,7 @@
                  [aero "1.1.6"]
                  [mount "0.1.17"]
                  [expound "0.9.0"]
+                 [lambdaisland/uri "1.16.134"]
                  ;; frontend
                  [reagent "1.2.0"]
                  [re-frame "1.3.0"]

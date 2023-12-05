@@ -1,11 +1,13 @@
 (ns challenge.backend.core-test
   (:require
    [clojure.java.io :as io]
+   [clojure.string :as string]
    [clojure.test :refer [deftest is testing use-fixtures]]
    [clojure.spec.alpha :as s]
    [clojure.spec.gen.alpha :as gen]
    [aero.core :refer [read-config]]
    [cheshire.core :as json]
+   [lambdaisland.uri :refer [uri uri-str]]
    [org.httpkit.server :refer [run-server]]
    [org.httpkit.client :refer [request]]
    [next.jdbc :as jdbc]
@@ -30,15 +32,25 @@
   :start ^HikariDataSource (->pool HikariDataSource (:db configuration))
   :stop (.close datasource))
 
-(defstate url-patients :start (format "http://localhost:%d/%s" (:port configuration) "patients"))
-(defn url-patient [id] (str url-patients "/" id))
+(defstate url-patients :start (-> (uri "http://localhost")
+                                  (assoc :port (:port configuration))
+                                  (assoc :path "/patients")))
 
 ;;; Utils
 (defn gen-patient []
   (gen/generate (s/gen ::domain/patient)))
 
-(defn gen-patient-entity []
-  (s/conform ::domain/patient (gen-patient)))
+(defn patient->entity [patient]
+  (s/conform ::domain/patient patient))
+
+(defn append-path [u segment]
+  (update u :path
+          #(let [path (or % "/")]
+             (str path (if (string/ends-with? path "/")
+                         (if (string/starts-with? segment "/") (subs segment 1) segment)       ; path/ + segment
+                         (if (string/starts-with? segment "/") segment (str "/" segment))))))) ; path + /segment
+
+(defn url-patient [id] (uri-str (append-path url-patients id)))
 
 (defn ds-conf [ds]
   (jdbc/with-options ds {:builder-fn as-unqualified-lower-maps}))
@@ -64,26 +76,26 @@
 ;; GET /patients
 (deftest patients-get-all
   (testing "Empty result"
-    (is (= (parse-json (:body @(request {:url url-patients :method :get})))
+    (is (= (parse-json (:body @(request {:url (uri-str url-patients) :method :get})))
            {:data [] :count 0})))
 
   (testing "Get all properly"
     (let [patients (repeat 5 (gen-patient))
-          entities (map #(s/conform ::domain/patient %) patients)
+          entities (map patient->entity patients)
           enumerated (map-indexed (fn [i a] (merge a {:id (inc i)})) patients)]
       (sql/insert-multi! datasource :patients (-> entities first keys vec) (vec (map vals entities)))
-      (is (= (parse-json (:body @(request {:url url-patients :method :get})))
+      (is (= (parse-json (:body @(request {:url (uri-str url-patients) :method :get})))
              {:data enumerated :count (count enumerated)}))))
 
   (testing "Get all in ascending order by id"
-    (is (= (map #(:id %) (:data (parse-json (:body @(request {:url url-patients :method :get})))))
+    (is (= (map #(:id %) (:data (parse-json (:body @(request {:url (uri-str url-patients) :method :get})))))
            (range 1 6)))))
 
 ;; POST /patients
 (deftest patients-create
   (testing "Create properly"
     (let [patient (gen-patient)]
-      @(request {:url url-patients
+      @(request {:url (uri-str url-patients)
                  :method :post
                  :body (json/generate-string patient)})
       (is (= (update (jdbc/execute-one! (ds-conf datasource) ["SELECT * FROM patients WHERE id = 1;"]) :birth_date #(.toString %))
@@ -92,7 +104,7 @@
 (deftest patients-create-response
   (testing "Return created"
     (let [patient (gen-patient)
-          response @(request {:url url-patients
+          response @(request {:url (uri-str url-patients)
                               :method :post
                               :body (json/generate-string patient)})]
       (is (= (parse-json (:body response))
@@ -101,7 +113,7 @@
 (deftest patients-create-invalid
   (testing "Return a proper error response for invalid data"
     (let [invalid (dissoc (gen-patient) :first_name)
-          response @(request {:url url-patients
+          response @(request {:url (uri-str url-patients)
                               :method :post
                               :body (json/generate-string invalid)})]
       (is (= (:status response) 400))
@@ -114,7 +126,7 @@
 
   (testing "Get one properly"
     (let [patient (gen-patient)]
-      (sql/insert! datasource :patients (s/conform ::domain/patient patient))
+      (sql/insert! datasource :patients (patient->entity patient))
       (is (= (parse-json (:body @(request {:url (url-patient 1) :method :get})))
              (merge patient {:id 1}))))))
 
@@ -128,7 +140,7 @@
       (is (empty? (:body response)))))
 
   (testing "Update properly"
-    (sql/insert! datasource :patients (gen-patient-entity))
+    (sql/insert! datasource :patients (patient->entity (gen-patient)))
     (let [response @(request {:url (url-patient 1)
                               :method :patch
                               :body (json/generate-string (gen-patient))})]
@@ -157,7 +169,7 @@
       (is (empty? (:body response)))))
 
   (testing "Delete properly"
-    (sql/insert! datasource :patients (gen-patient-entity))
+    (sql/insert! datasource :patients (patient->entity (gen-patient)))
     (let [response @(request {:url (url-patient 1) :method :delete})]
       (is (= (:status response) 204))
       (is (empty? (:body response))))))
