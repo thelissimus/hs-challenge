@@ -25,16 +25,16 @@
 (s/def ::server-error (s/keys :req-un [::message]))
 (s/def ::string->int (s/conformer #(try (Integer/parseInt %)
                                         (catch NumberFormatException _ ::s/invalid))))
-(s/def ::non-empty-map (s/and map? not-empty))
 
 (s/def ::id (s/and string? ::string->int))
+(s/def ::name ::domain/first_name)
 (s/def ::patient-query-params
-  (s/and (s/keys :opt-un [::id ::domain/sex ::domain/birth_date ::domain/address ::domain/insurance])
-         #(every? #{:id :sex :birth_date :address :insurance} (keys %))))
+  (s/and ::domain/non-empty-map
+         (s/keys :opt-un [::id ::name ::domain/sex ::domain/birth_date ::domain/address ::domain/insurance])
+         #(every? #{:id :name :sex :birth_date :address :insurance} (keys %))))
 
-(defn params->patient [{:keys [name birth-date] :as params}]
+(defn params->patient [{:keys [birth-date] :as params}]
   (as-> params $
-    (dissoc $ :name)
     (dissoc $ :birth-date)
     (if (empty? birth-date) $ (assoc $ :birth_date birth-date))))
 
@@ -60,7 +60,17 @@
     ([where]
      {:status 200
       :headers {"Content-Type" "application/json"}
-      :body (let [res (sql/query ds (builder/for-query :patients where {:order-by [:id]}))]
+      :body (let [clauses (dissoc where :name)
+                  name-query "CONCAT(first_name, ' ', middle_name, ' ', last_name) ILIKE '%' || ? || '%'"
+                  query
+                  (if (empty? clauses)
+                    [(str "SELECT * FROM patients WHERE " name-query) (:name where)]
+                    (conj (builder/for-query
+                           :patients
+                           clauses
+                           {:suffix (str "AND " name-query " ORDER BY id ASC;")})
+                          (:name where)))
+                  res (sql/query ds query)]
               (json/generate-string {:data res :count (count res)}))})))
 
 (defn patients-add [ds]
@@ -100,8 +110,8 @@
     (routes
      (-> (context "/patients" []
            (GET "/" req
-             (conform-let [params (s/conform (s/and ::non-empty-map ::patient-query-params)
-                                             (params->patient (keywordize-keys (:params req))))]
+             (conform-let [params (s/conform ::patient-query-params
+                                             (-> req :params keywordize-keys params->patient))]
                           ((patients-get-all ds) params)
                           ((patients-get-all ds))))
            (POST "/" req
@@ -117,7 +127,7 @@
              (PATCH "/" req
                (conform-let* [body (parse-json-body req)
                               id_ (s/conform ::string->int id)
-                              pat (s/conform (s/and ::domain/patient-partial ::non-empty-map) body)]
+                              pat (s/conform ::domain/patient-partial body)]
                              ((patients-update ds) id_ pat)
                              (validation-err (s/explain-str ::domain/patient-partial body))))
              (DELETE "/" []

@@ -6,6 +6,8 @@
    [java-time.api :as time]
    [challenge.common.domain :refer [male female]]))
 
+(s/def ::non-empty-map (s/and map? not-empty))
+
 (s/def ::first_name (s/and string? #(>= 255 (count %))))
 (s/def ::middle_name (s/and string? #(>= 255 (count %))))
 (s/def ::last_name (s/and string? #(>= 255 (count %))))
@@ -23,7 +25,8 @@
 (s/def ::patient
   (s/keys :req-un [::first_name ::middle_name ::last_name ::sex ::birth_date ::address ::insurance]))
 (s/def ::patient-partial
-  (s/and (s/keys :opt-un [::first_name ::middle_name ::last_name ::sex ::birth_date ::address ::insurance])
-         #(every? #{:first_name :middle_name :last_name :sex :birth_date :address :insurance} (keys %))))
+  (s/and ::non-empty-map
+         #(every? #{:first_name :middle_name :last_name :sex :birth_date :address :insurance} (keys %))
+         (s/keys :opt-un [::first_name ::middle_name ::last_name ::sex ::birth_date ::address ::insurance])))
 
 (defrecord Patient [first_name middle_name last_name sex birth_date address insurance])
