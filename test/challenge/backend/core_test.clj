@@ -158,11 +158,10 @@
         (is (= response {:data wanted :count (count wanted)}))))
 
     (testing "Filter by all"
-      (let [params (-> enumerated first server/patient->params)
+      (let [params (-> enumerated first server/patient->query)
             response (get-all-patients params)
             wanted (filter #(let [{:keys [id first_name middle_name last_name sex birth_date address insurance]} %
                                   name (if (>= (count first_name) 3) (subs first_name (/ (count first_name) 3)) first_name)]
-                              (println params)
                               (and (= (:id params) id)
                                    (re-matches (re-pattern (str "(?i).*" name ".*"))
                                                (str first_name " " middle_name " " last_name))

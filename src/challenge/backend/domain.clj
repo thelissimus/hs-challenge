@@ -28,5 +28,3 @@
   (s/and ::non-empty-map
          #(every? #{:first_name :middle_name :last_name :sex :birth_date :address :insurance} (keys %))
          (s/keys :opt-un [::first_name ::middle_name ::last_name ::sex ::birth_date ::address ::insurance])))
-
-(defrecord Patient [first_name middle_name last_name sex birth_date address insurance])

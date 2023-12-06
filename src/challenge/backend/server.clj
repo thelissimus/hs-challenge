@@ -28,17 +28,13 @@
 
 (s/def ::id (s/and string? ::string->int))
 (s/def ::name ::domain/first_name)
-(s/def ::patient-query-params
+(s/def ::birth-date ::domain/birth_date)
+(s/def ::patient-query
   (s/and ::domain/non-empty-map
-         (s/keys :opt-un [::id ::name ::domain/sex ::domain/birth_date ::domain/address ::domain/insurance])
-         #(every? #{:id :name :sex :birth_date :address :insurance} (keys %))))
+         (s/keys :opt-un [::id ::name ::domain/sex ::birth-date ::domain/address ::domain/insurance])
+         #(every? #{:id :name :sex :birth-date :address :insurance} (keys %))))
 
-(defn params->patient [{:keys [birth-date] :as params}]
-  (as-> params $
-    (dissoc $ :birth-date)
-    (if (empty? birth-date) $ (assoc $ :birth_date birth-date))))
-
-(defn patient->params [{:keys [id first_name middle_name last_name sex birth_date address insurance]}]
+(defn patient->query [{:keys [id first_name middle_name last_name sex birth_date address insurance]}]
   {:id id
    :name (str first_name " " middle_name " " last_name)
    :sex sex
@@ -65,21 +61,24 @@
       :headers {"Content-Type" "application/json"}
       :body (let [res (sql/query ds ["SELECT * FROM patients ORDER BY id ASC;"])]
               (json/generate-string {:data res :count (count res)}))})
-    ([where]
+    ([{:keys [id name sex birth-date address insurance]}]
      {:status 200
       :headers {"Content-Type" "application/json"}
-      :body (let [clauses (dissoc where :name)
-                  name (:name where)
+      :body (let [clauses (into {} (remove (comp nil? val)
+                                           {:id id
+                                            :sex sex
+                                            :birth_date birth-date
+                                            :address address
+                                            :insurance insurance}))
                   name-query "CONCAT(first_name, ' ', middle_name, ' ', last_name) ILIKE '%' || ? || '%'"
                   query
                   (if (empty? clauses)
-                    [(str "SELECT * FROM patients WHERE " name-query) (:name where)]
+                    [(str "SELECT * FROM patients WHERE " name-query) name]
                     (if name
                       (conj (builder/for-query
                              :patients
                              clauses
-                             {:suffix (str "AND " name-query " ORDER BY id ASC;")})
-                            (:name where))
+                             {:suffix (str "AND " name-query " ORDER BY id ASC;")}) name)
                       (builder/for-query :patients clauses {})))
                   res (sql/query ds query)]
               (json/generate-string {:data res :count (count res)}))})))
@@ -95,9 +94,7 @@
     (if-let [res (jdbc/execute-one! ds ["SELECT * FROM patients WHERE id = ?;" id])]
       {:status 200
        :headers {"Content-Type" "application/json"}
-       :body (-> res
-                 (update :birth_date #(time/local-date %))
-                 (json/generate-string))}
+       :body (json/generate-string res)}
       {:status 404})))
 
 (defn patients-update [ds]
@@ -121,8 +118,7 @@
     (routes
      (-> (context "/patients" []
            (GET "/" req
-             (conform-let [params (s/conform ::patient-query-params
-                                             (-> req :params keywordize-keys params->patient))]
+             (conform-let [params (s/conform ::patient-query (-> req :params keywordize-keys))]
                           ((patients-get-all ds) params)
                           ((patients-get-all ds))))
            (POST "/" req
