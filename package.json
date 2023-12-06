@@ -6,6 +6,7 @@
 		"tailwind": "tailwindcss -i ./resources/public/global.css -o ./resources/public/assets/css/styles.css --watch",
 		"watch": "npx shadow-cljs watch frontend",
 		"release": "npx shadow-cljs release frontend",
+		"build": "tailwindcss -i ./resources/public/global.css -o ./resources/public/assets/css/styles.css && npm run release",
 		"build-report": "npx shadow-cljs run shadow.cljs.build-report frontend target/build-report.html"
 	},
 	"devDependencies": {
