@@ -7,13 +7,34 @@ on:
     branches: [ "master" ]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_DB: challenge_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
-    - uses: actions/checkout@v3
-    - name: Install dependencies
-      run: lein deps
-    - name: Build
-      run: lein uberjar
-    - name: Run tests
-      run: lein test
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: lein deps
+
+      - name: Build
+        run: lein uberjar
+
+      - name: Run tests
+        run: lein test
+        env:
+          DB_PASSWORD: postgres
