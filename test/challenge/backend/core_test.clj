@@ -7,7 +7,7 @@
    [clojure.spec.gen.alpha :as gen]
    [aero.core :refer [read-config]]
    [cheshire.core :as json]
-   [lambdaisland.uri :refer [assoc-query uri uri-str]]
+   [lambdaisland.uri :refer [assoc-query* uri uri-str]]
    [org.httpkit.server :refer [run-server]]
    [org.httpkit.client :refer [request]]
    [next.jdbc :as jdbc]
@@ -52,6 +52,10 @@
 
 (defn url-patient [id] (uri-str (append-path url-patients id)))
 
+(defn get-all-patients [query]
+  (parse-json (:body @(request {:url (-> url-patients (assoc-query* query) uri-str)
+                                :method :get}))))
+
 (defn ds-conf [ds]
   (jdbc/with-options ds {:builder-fn as-unqualified-lower-maps}))
 
@@ -82,7 +86,7 @@
   (testing "Get all properly"
     (let [patients (repeat 5 (gen-patient))
           entities (map patient->entity patients)
-          enumerated (map-indexed (fn [i a] (merge a {:id (inc i)})) patients)]
+          enumerated (map-indexed #(merge %2 {:id (inc %1)}) patients)]
       (sql/insert-multi! datasource :patients (-> entities first keys vec) (vec (map vals entities)))
       (is (= (parse-json (:body @(request {:url (uri-str url-patients) :method :get})))
              {:data enumerated :count (count enumerated)}))))
@@ -93,43 +97,80 @@
 
 (deftest patients-get-all-filter
   (let [patients (repeat 5 (gen-patient))
-        entities (map patient->entity patients)]
+        entities (map patient->entity patients)
+        enumerated (map-indexed #(merge %2 {:id (inc %1)}) patients)]
     (sql/insert-multi! datasource :patients (-> entities first keys vec) (vec (map vals entities)))
 
     (testing "Filter by id"
-      (let [response (parse-json (:body @(request {:url (-> url-patients (assoc-query :id 1) uri-str) :method :get})))]
-        (is (= (:count response) 1))
-        (is (= (-> response :data first :id) 1))))
+      (let [id (-> enumerated first :id)
+            response (get-all-patients {:id id})
+            wanted (filter #(= (:id %) id) enumerated)]
+        (is (= response {:data wanted :count (count wanted)}))))
 
     (testing "Filter by name"
-      (is false))
+      (let [name (-> enumerated first :first_name)
+            response (get-all-patients {:name name})
+            wanted (filter #(= (:first_name %) name) enumerated)]
+        (is (= response {:data wanted :count (count wanted)}))))
 
     (testing "Filter by name (case insensitive)"
-      (is false))
+      (let [name (-> enumerated first :first_name)
+            response (get-all-patients {:name name})
+            wanted (filter #(let [{:keys [first_name middle_name last_name]} %]
+                              (re-matches (re-pattern (str "(?i).*" name ".*"))
+                                          (str first_name " " middle_name " " last_name))) enumerated)]
+        (is (= response {:data wanted :count (count wanted)}))))
 
     (testing "Filter by name (partial)"
-      (is false))
+      (let [name (as-> enumerated $
+                   (first $)
+                   (:first_name $)
+                   (let [len (count $)]
+                     (if (>= len 3) (subs $ (/ len 3)) $))) ;; drop the 1/3 part
+            response (get-all-patients {:name name})
+            wanted (filter #(let [{:keys [first_name middle_name last_name]} %]
+                              (re-matches (re-pattern (str "(?i).*" name ".*"))
+                                          (str first_name " " middle_name " " last_name))) enumerated)]
+        (is (= response {:data wanted :count (count wanted)}))))
 
     (testing "Filter by sex"
-      (is false))
+      (let [sex (-> enumerated first :sex)
+            response (get-all-patients {:sex sex})
+            wanted (filter #(= (:sex %) sex) enumerated)]
+        (is (= response {:data wanted :count (count wanted)}))))
 
     (testing "Filter by birth date"
-      (is false))
+      (let [birth-date (-> enumerated first :birth_date)
+            response (get-all-patients {:birth-date birth-date})
+            wanted (filter #(= (:birth_date %) birth-date) enumerated)]
+        (is (= response {:data wanted :count (count wanted)}))))
 
     (testing "Filter by address"
-      (is false))
-
-    (testing "Filter by address (case insensitive)"
-      (is false))
-
-    (testing "Filter by address (partial)"
-      (is false))
+      (let [address (-> enumerated first :address)
+            response (get-all-patients {:address address})
+            wanted (filter #(= (:address %) address) enumerated)]
+        (is (= response {:data wanted :count (count wanted)}))))
 
     (testing "Filter by insurance"
-      (is false))
+      (let [insurance (-> enumerated first :insurance)
+            response (get-all-patients {:insurance insurance})
+            wanted (filter #(= (:insurance %) insurance) enumerated)]
+        (is (= response {:data wanted :count (count wanted)}))))
 
-    (testing "Filter by insurance (partial)"
-      (is false))))
+    (testing "Filter by all"
+      (let [params (-> enumerated first server/patient->params)
+            response (get-all-patients params)
+            wanted (filter #(let [{:keys [id first_name middle_name last_name sex birth_date address insurance]} %
+                                  name (if (>= (count first_name) 3) (subs first_name (/ (count first_name) 3)) first_name)]
+                              (println params)
+                              (and (= (:id params) id)
+                                   (re-matches (re-pattern (str "(?i).*" name ".*"))
+                                               (str first_name " " middle_name " " last_name))
+                                   (= (:sex params) sex)
+                                   (= (:birth-date params) birth_date)
+                                   (= (:address params) address)
+                                   (= (:insurance params) insurance))) enumerated)]
+        (is (= response {:data wanted :count (count wanted)}))))))
 
 ;; POST /patients
 (deftest patients-create

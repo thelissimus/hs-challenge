@@ -38,6 +38,14 @@
     (dissoc $ :birth-date)
     (if (empty? birth-date) $ (assoc $ :birth_date birth-date))))
 
+(defn patient->params [{:keys [id first_name middle_name last_name sex birth_date address insurance]}]
+  {:id id
+   :name (str first_name " " middle_name " " last_name)
+   :sex sex
+   :birth-date birth_date
+   :address address
+   :insurance insurance})
+
 ;;; Utils
 (add-encoder java.time.LocalDate
              (fn [c jsonGen] (.writeString jsonGen (.toString c))))
