@@ -48,6 +48,7 @@
 
 (defn validation-err [message]
   {:status 400
+   :headers {"Content-Type" "application/json"}
    :body (json/generate-string (->ServerError message))})
 
 (defn parse-json-body [req]
