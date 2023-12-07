@@ -9,7 +9,6 @@
    [clojure.walk :refer [keywordize-keys]]
    [compojure.core :refer [context DELETE GET PATCH POST routes]]
    [compojure.middleware :refer [wrap-canonical-redirect]]
-   [java-time.api :as time]
    [jumblerg.middleware.cors :refer [wrap-cors]]
    [ring.middleware.params :refer [wrap-params]]
    [next.jdbc :as jdbc]
@@ -33,14 +32,6 @@
   (s/and ::domain/non-empty-map
          (s/keys :opt-un [::id ::name ::domain/sex ::birth-date ::domain/address ::domain/insurance])
          #(every? #{:id :name :sex :birth-date :address :insurance} (keys %))))
-
-(defn patient->query [{:keys [id first_name middle_name last_name sex birth_date address insurance]}]
-  {:id id
-   :name (str first_name " " middle_name " " last_name)
-   :sex sex
-   :birth-date birth_date
-   :address address
-   :insurance insurance})
 
 ;;; Utils
 (add-encoder java.time.LocalDate

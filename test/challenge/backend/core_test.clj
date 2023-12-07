@@ -43,6 +43,14 @@
 (defn patient->entity [patient]
   (s/conform ::domain/patient patient))
 
+(defn patient->query [{:keys [id first_name middle_name last_name sex birth_date address insurance]}]
+  {:id id
+   :name (str first_name " " middle_name " " last_name)
+   :sex sex
+   :birth-date birth_date
+   :address address
+   :insurance insurance})
+
 (defn append-path [u segment]
   (update u :path
           #(let [path (or % "/")]
@@ -158,7 +166,7 @@
         (is (= response {:data wanted :count (count wanted)}))))
 
     (testing "Filter by all"
-      (let [params (-> enumerated first server/patient->query)
+      (let [params (-> enumerated first patient->query)
             response (get-all-patients params)
             wanted (filter #(let [{:keys [id first_name middle_name last_name sex birth_date address insurance]} %
                                   name (if (>= (count first_name) 3) (subs first_name (/ (count first_name) 3)) first_name)]
