@@ -31,7 +31,7 @@ jobs:
       - name: Install dependencies
         run: |
           lein deps
-          npm install
+          npm ci
 
       - name: Build
         run: |
@@ -39,6 +39,8 @@ jobs:
           npm run build
 
       - name: Run tests
-        run: lein test
+        run: |
+          lein test
+          npm run test
         env:
           DB_TEST_PASSWORD: postgres

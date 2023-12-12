@@ -4,13 +4,17 @@
 	"private": true,
 	"scripts": {
 		"tailwind": "tailwindcss -i ./resources/public/global.css -o ./resources/public/assets/css/styles.css --watch",
-		"watch": "npx shadow-cljs watch frontend",
-		"release": "npx shadow-cljs release frontend",
+		"watch": "shadow-cljs watch frontend",
+		"release": "shadow-cljs release frontend",
 		"build": "tailwindcss -i ./resources/public/global.css -o ./resources/public/assets/css/styles.css && npm run release",
-		"build-report": "npx shadow-cljs run shadow.cljs.build-report frontend target/build-report.html"
+		"build-report": "shadow-cljs run shadow.cljs.build-report frontend target/build-report.html",
+		"test": "shadow-cljs compile ci && karma start --single-run"
 	},
 	"devDependencies": {
 		"@tailwindcss/forms": "^0.5.7",
+		"karma": "^2.0.0",
+		"karma-chrome-launcher": "^2.2.0",
+		"karma-cljs-test": "^0.1.0",
 		"shadow-cljs": "2.25.8",
 		"tailwindcss": "^3.3.5"
 	},
