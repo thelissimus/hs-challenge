@@ -3,6 +3,10 @@
    [re-frame.core :as reframe]))
 
 (reframe/reg-sub
+ ::db
+ identity)
+
+(reframe/reg-sub
  ::current-route
  (fn [db] (:current-route db)))
 
