@@ -30,17 +30,20 @@ jobs:
 
       - name: Install dependencies
         run: |
-          lein deps
+          lein deps &
           npm ci
+          wait
 
       - name: Build
         run: |
-          lein uberjar
+          lein uberjar &
           npm run build
+          wait
 
       - name: Run tests
         run: |
-          lein test
+          lein test &
           npm run test
+          wait
         env:
           DB_TEST_PASSWORD: postgres
