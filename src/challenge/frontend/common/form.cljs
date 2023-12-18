@@ -8,6 +8,7 @@
   [:<>
    [:label {:for key}]
    [:input (->> {:placeholder placeholder
+                 :name        key
                  :value       @(reframe/subscribe [::subs/form form key])
                  :on-change   #(reframe/dispatch [::events/update-form
                                                   form
@@ -16,7 +17,8 @@
                 (merge attrs))]])
 
 (defn select-view [key form placeholder options attrs]
-  [:select (merge {:value     @(reframe/subscribe [::subs/form form key])
+  [:select (merge {:name      key
+                   :value     @(reframe/subscribe [::subs/form form key])
                    :on-change #(reframe/dispatch [::events/update-form
                                                   form
                                                   key
