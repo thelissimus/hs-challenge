@@ -44,8 +44,7 @@
              (some? (.getByText screen "Female"))
              (some? (.getByPlaceholderText screen "Birth date"))
              (some? (.getByPlaceholderText screen "Address"))
-             (some? (.getByPlaceholderText screen "Insurance"))))
-    (rtl/cleanup)))
+             (some? (.getByPlaceholderText screen "Insurance"))))))
 
 (deftest patients-edit
   (testing "Form renders correctly"
@@ -58,8 +57,7 @@
              (some? (.getByText screen "Female"))
              (some? (.getByPlaceholderText screen "Birth date"))
              (some? (.getByPlaceholderText screen "Address"))
-             (some? (.getByPlaceholderText screen "Insurance"))))
-    (rtl/cleanup)))
+             (some? (.getByPlaceholderText screen "Insurance"))))))
 
 (deftest patients-index
   (testing "Page renders correctly"
@@ -81,8 +79,7 @@
                (.getByText (within tbody) "Female")
                (.getByPlaceholderText (within tbody) "Birth date")
                (.getByPlaceholderText (within tbody) "Address")
-               (.getByPlaceholderText (within tbody) "Insurance"))))
-    (rtl/cleanup)))
+               (.getByPlaceholderText (within tbody) "Insurance"))))))
 
 (deftest patients-show
   (rft/run-test-sync
@@ -103,8 +100,7 @@
               (.getByText screen "Birth date")
               (.getByText screen "Address")
               (.getByText screen "Insurance")
-              (.getByText screen "Actions")))
-     (rtl/cleanup))))
+              (.getByText screen "Actions"))))))
 
 (defn create-app-element [tests]
   (.appendChild (.-body js/document)
@@ -115,3 +111,4 @@
   (tests))
 
 (use-fixtures :once create-app-element)
+(use-fixtures :each (fn [test] (test) (rtl/cleanup)))

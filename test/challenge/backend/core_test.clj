@@ -32,9 +32,10 @@
   :start ^HikariDataSource (->pool HikariDataSource (:db configuration))
   :stop (.close datasource))
 
-(defstate url-patients :start (-> (uri "http://localhost")
-                                  (assoc :port (:port configuration))
-                                  (assoc :path "/patients")))
+(defstate url-patients
+  :start (-> (uri "http://localhost")
+             (assoc :port (:port configuration))
+             (assoc :path "/patients")))
 
 ;;; Utils
 (defn gen-patient []
