@@ -1,6 +1,9 @@
 (ns challenge.frontend.routes
   (:require
    [re-frame.core :as reframe]
+   [reitit.frontend :refer [router]]
+   [reitit.frontend.easy :as rfe]
+   [reitit.coercion.spec :as rcs]
    [challenge.frontend.events :as events]
    [challenge.frontend.view.patients.create :refer [create]]
    [challenge.frontend.view.patients.edit :refer [edit]]
@@ -33,3 +36,8 @@
      :controllers
      [{:parameters {:path [:id]}
        :start (fn [{:keys [path]}] (reframe/dispatch [::events/fetch-patient-current-update (:id path)]))}]}]])
+
+(defn setup-router []
+  (rfe/start! (router routes {:data {:coercion rcs/coercion}})
+              (fn [m] (when m (reframe/dispatch [::events/navigated m])))
+              {:use-fragment true}))

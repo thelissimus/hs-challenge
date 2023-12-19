@@ -6,6 +6,7 @@
    [reagent.core :as r]
    [reagent.dom.client :refer [create-root render]]
    [challenge.common.domain :as domain]
+   [challenge.frontend.routes :refer [setup-router]]
    [challenge.frontend.events :as events]
    [challenge.frontend.subs :as subs]
    [challenge.frontend.view.index :refer [main-page]]
@@ -110,6 +111,7 @@
                 (doto (.createElement js/document "div")
                   (.setAttribute "id" "app")
                   (.setAttribute "style" "display:none;")))
+  (setup-router)
   (tests))
 
 (use-fixtures :once create-app-element)
