@@ -5,6 +5,7 @@
    [clojure.spec.alpha :as s]
    [expound.alpha :refer [expound-str]]
    [aero.core :refer [read-config]]
+   [next.jdbc :as jdbc]
    [next.jdbc.connection :refer [->pool]]
    [org.httpkit.server :refer [run-server]]
    [taoensso.timbre :refer [error info infof]]
@@ -19,6 +20,7 @@
     config (s/conform ::config/config cfg)
     ^HikariDataSource ds (->pool HikariDataSource (:db config))]
    (do
+     (.close (jdbc/get-connection ds))
      (info "Connected to database")
      (infof "Running server on http://localhost:%d" (:port config))
      (run-server (server/app ds) {:port (:port config)}))
@@ -29,6 +31,7 @@
 (comment
   (def cfg (s/conform ::config/config (read-config (io/resource "config/backend.edn") {:profile :default})))
   (def ds (->pool HikariDataSource (:db cfg)))
+  (.close (jdbc/get-connection ds))
   (def server (run-server (server/app ds) {:port (:port cfg)}))
   (server)
   (.close ds)
