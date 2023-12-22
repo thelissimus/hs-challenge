@@ -20,3 +20,7 @@ pom.xml.asc
 node_modules/
 resources/public/assets/
 .shadow-cljs/
+
+# Secrets
+.secrets
+.env
