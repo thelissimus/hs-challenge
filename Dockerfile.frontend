@@ -1,0 +1,14 @@
+FROM theasp/clojurescript-nodejs:shadow-cljs-alpine AS build
+WORKDIR /app
+RUN apk --no-cache add leiningen
+COPY project.clj shadow-cljs.edn /app/
+RUN lein deps
+COPY package.json package-lock.json /app/
+RUN npm install
+COPY . /app
+RUN npm run build
+
+FROM nginx:alpine
+COPY --from=build /app/resources/public /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
