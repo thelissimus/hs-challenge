@@ -3,12 +3,12 @@
  :db #profile {:default
                {:dbtype "postgresql"
                 :dbname "challenge"
-                :host "localhost"
+                :host #env DB_HOST
                 :username "postgres"
                 :password #or [#env DB_PASSWORD ""]}
                :test
                {:dbtype "postgresql"
                 :dbname "challenge_test"
-                :host "localhost"
+                :host #env DB_HOST
                 :username "postgres"
                 :password #or [#env DB_TEST_PASSWORD ""]}}}

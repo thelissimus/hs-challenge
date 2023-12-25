@@ -56,10 +56,10 @@ jobs:
           context: .
           file: Dockerfile.backend
           push: true
-          tags: thelissimus/hs-challenge-backend:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/hs-challenge-backend:latest
       - uses: docker/build-push-action@v5
         with:
           context: .
           file: Dockerfile.frontend
           push: true
-          tags: thelissimus/hs-challenge-frontend:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/hs-challenge-frontend:latest
