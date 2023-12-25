@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-ingress-microk8s
+  labels:
+    app: nginx-ingress-microk8s
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/use-forwarded-headers: "true"
+spec:
+  rules:
+    - host: "backend.312476.xyz"
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/(.*)"
+            backend:
+              service:
+                name: patients-backend
+                port:
+                  number: 8080
