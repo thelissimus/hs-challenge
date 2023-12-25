@@ -1,2 +1,2 @@
-{:backend-url #profile {:default "http://localhost:8080"
+{:backend-url #profile {:default #env BACKEND_URL
                         :test "http://localhost:8081"}}
