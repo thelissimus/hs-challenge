@@ -1,4 +1,6 @@
 FROM theasp/clojurescript-nodejs:shadow-cljs-alpine AS build
+ARG BACKEND_URL
+ENV BACKEND_URL=${BACKEND_URL}
 WORKDIR /app
 RUN apk --no-cache add leiningen
 COPY project.clj shadow-cljs.edn /app/

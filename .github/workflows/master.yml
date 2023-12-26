@@ -63,3 +63,5 @@ jobs:
           file: Dockerfile.frontend
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/hs-challenge-frontend:latest
+          build-args: |
+            BACKEND_URL=${{ secrets.BACKEND_URL }}
