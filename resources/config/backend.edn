@@ -9,6 +9,6 @@
                :test
                {:dbtype "postgresql"
                 :dbname "challenge_test"
-                :host #env DB_HOST
+                :host #env DB_TEST_HOST
                 :username "postgres"
                 :password #or [#env DB_TEST_PASSWORD ""]}}}
