@@ -5,33 +5,21 @@
    [clojure.test :refer [deftest is testing use-fixtures]]
    [clojure.spec.alpha :as s]
    [clojure.spec.gen.alpha :as gen]
-   [aero.core :refer [read-config]]
    [cheshire.core :as json]
    [lambdaisland.uri :refer [assoc-query* uri uri-str]]
    [org.httpkit.server :refer [run-server]]
    [org.httpkit.client :refer [request]]
    [next.jdbc :as jdbc]
    [next.jdbc.sql :as sql]
-   [next.jdbc.connection :refer [->pool]]
-   [next.jdbc.result-set :refer [as-unqualified-lower-maps]]
-   [next.jdbc.date-time :refer [read-as-local]]
    [mount.core :refer [defstate] :as mount]
+   [challenge.backend.deps :refer [get-configuration get-datasrouce]]
    [challenge.backend.lib :refer [parse-json]]
-   [challenge.backend.config :as config]
    [challenge.backend.server :as server]
-   [challenge.backend.domain :as domain])
-  (:import (com.zaxxer.hikari HikariDataSource)))
+   [challenge.backend.domain :as domain]))
 
 ;;; State
-(defstate configuration
-  :start (-> (io/resource "config/backend.edn")
-             (read-config {:profile :test})
-             (#(s/conform ::config/config %))))
-
-(defstate datasource
-  :start ^HikariDataSource (->pool HikariDataSource (:db configuration))
-  :stop (.close datasource))
-
+(defstate configuration :start (get-configuration :test))
+(defstate datasource    :start (get-datasrouce (:db configuration)))
 (defstate url-patients
   :start (-> (uri "http://localhost")
              (assoc :port (:port configuration))
@@ -65,17 +53,16 @@
   (parse-json (:body @(request {:url (-> url-patients (assoc-query* query) uri-str)
                                 :method :get}))))
 
-(defn ds-conf [ds]
-  (jdbc/with-options ds {:builder-fn as-unqualified-lower-maps}))
-
 ;;; Fixtures
 (defn setup-server [tests]
-  (mount/start)
-  (let [server (run-server (server/app datasource) {:port (:port configuration)})]
-    (read-as-local)
+  (let [{:keys [db port], :as cfg} (get-configuration :test)
+        ds (get-datasrouce db)
+        server (run-server server/app {:port port})]
+    (mount/start-with {#'challenge.backend.deps/configuration cfg
+                       #'challenge.backend.deps/datasource ds})
     (tests)
-    (server))
-  (mount/stop))
+    (server)
+    (mount/stop)))
 
 (defn reset-database [tests]
   (jdbc/execute! datasource [(slurp (io/resource "schema/schema.sql"))])
@@ -187,7 +174,7 @@
       @(request {:url (uri-str url-patients)
                  :method :post
                  :body (json/generate-string patient)})
-      (is (= (update (jdbc/execute-one! (ds-conf datasource) ["SELECT * FROM patients WHERE id = 1;"]) :birth_date #(.toString %))
+      (is (= (update (jdbc/execute-one! datasource ["SELECT * FROM patients WHERE id = 1;"]) :birth_date #(.toString %))
              (merge patient {:id 1}))))))
 
 (deftest patients-create-response
