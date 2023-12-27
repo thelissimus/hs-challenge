@@ -59,7 +59,9 @@
         ds (get-datasrouce db)
         server (run-server server/app {:port port})]
     (mount/start-with {#'challenge.backend.deps/configuration cfg
-                       #'challenge.backend.deps/datasource ds})
+                       #'challenge.backend.deps/datasource ds
+                       #'challenge.backend.core-test/configuration cfg
+                       #'challenge.backend.core-test/datasource ds})
     (tests)
     (server)
     (mount/stop)))
