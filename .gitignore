@@ -13,7 +13,8 @@ pom.xml.asc
 .hg/
 
 # Editor
-.clj-kondo/
+.clj-kondo/*
+!.clj-kondo/config.edn
 .lsp/
 .calva/
 
