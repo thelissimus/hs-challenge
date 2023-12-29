@@ -7,10 +7,11 @@
 (s/def :db/dbtype #{"postgresql"})
 (s/def :db/dbname ::ne-string)
 (s/def :db/host ::ne-string)
+(s/def :db/port ::port)
 (s/def :db/username ::ne-string)
 (s/def :db/password string?)
 (s/def ::db
-  (s/keys :req-un [:db/dbtype :db/dbname :db/host :db/username :db/password]))
+  (s/keys :req-un [:db/dbtype :db/dbname :db/host :db/port :db/username :db/password]))
 
 (s/def ::config
   (s/keys :req-un [::port ::db]))

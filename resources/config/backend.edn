@@ -2,13 +2,15 @@
                  :test 8081}
  :db #profile {:default
                {:dbtype "postgresql"
-                :dbname "challenge"
+                :dbname #env DB_NAME
                 :host #env DB_HOST
-                :username "postgres"
-                :password #or [#env DB_PASSWORD ""]}
+                :port #long #env DB_PORT
+                :username #env DB_USERNAME
+                :password #env DB_PASSWORD}
                :test
                {:dbtype "postgresql"
                 :dbname "challenge_test"
-                :host #env DB_TEST_HOST
+                :host "localhost"
+                :port 5432
                 :username "postgres"
-                :password #or [#env DB_TEST_PASSWORD ""]}}}
+                :password "postgres"}}}
