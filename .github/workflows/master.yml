@@ -35,9 +35,6 @@ jobs:
           wait
       - name: Run backend tests
         run: lein test
-        env:
-          DB_TEST_HOST: localhost
-          DB_TEST_PASSWORD: postgres
       - name: Run frontend tests
         run: npm run test
   deploy:
