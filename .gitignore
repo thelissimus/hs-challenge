@@ -24,4 +24,5 @@ resources/public/assets/
 
 # Secrets
 .secrets
+k8s/backend-secrets.yaml
 .env

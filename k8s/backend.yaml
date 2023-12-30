@@ -21,6 +21,9 @@ spec:
               cpu: "500m"
           ports:
             - containerPort: 8080
+          envFrom:
+            - secretRef:
+                name: patients-backend-secret
 
 ---
 apiVersion: v1
