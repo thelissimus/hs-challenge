@@ -9,7 +9,7 @@ metadata:
     nginx.ingress.kubernetes.io/use-forwarded-headers: "true"
 spec:
   rules:
-    - host: "backend.312476.xyz"
+    - host: "backend.keilambda.com"
       http:
         paths:
           - pathType: Prefix
@@ -19,7 +19,7 @@ spec:
                 name: patients-backend
                 port:
                   number: 8080
-    - host: "frontend.312476.xyz"
+    - host: "frontend.keilambda.com"
       http:
         paths:
           - pathType: Prefix
