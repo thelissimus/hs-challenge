@@ -15,10 +15,6 @@ spec:
       containers:
         - name: patients-backend
           image: thelissimus/hs-challenge-backend:latest
-          resources:
-            limits:
-              memory: "512Mi"
-              cpu: "500m"
           ports:
             - containerPort: 8080
           envFrom:
