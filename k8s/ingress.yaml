@@ -1,13 +1,12 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: nginx-ingress-microk8s
-  labels:
-    app: nginx-ingress-microk8s
+  name: nginx-ingress
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /$1
     nginx.ingress.kubernetes.io/use-forwarded-headers: "true"
 spec:
+  ingressClassName: nginx
   rules:
     - host: "backend.keilambda.com"
       http:
