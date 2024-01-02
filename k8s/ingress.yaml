@@ -8,21 +8,21 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: "backend.keilambda.com"
+    - host: backend.keilambda.com
       http:
         paths:
           - pathType: Prefix
-            path: "/(.*)"
+            path: /
             backend:
               service:
                 name: patients-backend
                 port:
                   number: 8080
-    - host: "frontend.keilambda.com"
+    - host: frontend.keilambda.com
       http:
         paths:
           - pathType: Prefix
-            path: "/(.*)"
+            path: /
             backend:
               service:
                 name: patients-frontend

@@ -1,8 +1,16 @@
-name: test-and-deploy
+name: backend-test-and-deploy
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
+    paths:
+      - "resources/config/backend.edn"
+      - "resources/schema/**"
+      - "src/backend/**"
+      - "src/common/**"
+      - "test/backend/**"
+      - "Dockerfile.backend"
+      - "project.clj"
 
 jobs:
   test:
@@ -24,19 +32,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install dependencies
-        run: |
-          lein deps &
-          npm ci
-          wait
+        run: lein deps
       - name: Build
-        run: |
-          lein uberjar &
-          npm run build
-          wait
+        run: lein uberjar
       - name: Run backend tests
         run: lein test
-      - name: Run frontend tests
-        run: npm run test
   deploy:
     needs: test
     runs-on: ubuntu-latest
@@ -54,11 +54,3 @@ jobs:
           file: Dockerfile.backend
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/hs-challenge-backend:latest
-      - uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: Dockerfile.frontend
-          push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/hs-challenge-frontend:latest
-          build-args: |
-            BACKEND_URL=${{ secrets.BACKEND_URL }}
