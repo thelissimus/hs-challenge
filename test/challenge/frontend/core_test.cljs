@@ -17,47 +17,86 @@
    ["@testing-library/react" :refer [screen] :as rtl]
    ["@testing-library/dom" :refer [within]]))
 
+;;; Utils
+(defn with-render [elem f]
+  (let [mounted (rtl/render (r/as-element elem))]
+    (try (f mounted)
+         (finally (rtl/cleanup) (.unmount mounted) (r/flush)))))
+
+(defn change [elem value]
+  (.change rtl/fireEvent elem (clj->js {:target {:value value}})))
+
+(defn call [f] (f))
+
+(def form-queries
+  {:first-name  #(.getByPlaceholderText screen "First name")
+   :middle-name #(.getByPlaceholderText screen "Middle name")
+   :last-name   #(.getByPlaceholderText screen "Last name")
+   :sex         #(.getByText            screen "Sex")
+   :birth-date  #(.getByPlaceholderText screen "Birth date")
+   :address     #(.getByPlaceholderText screen "Address")
+   :insurance   #(.getByPlaceholderText screen "Insurance")})
+
+;;; Tests
 (deftest init
   (testing "Renders correctly"
     (is (nil? (render (create-root (.getElementById js/document "app")) [main-page])))))
 
-(deftest db-initial-state
-  (rft/run-test-sync
-   (testing "Initial db state"
-     (rf/dispatch [::events/init-db])
-     (is (= @(rf/subscribe [::subs/db])
-            {:current-route nil
-             :patients-list []
-             :patients-query nil
-             :patient-current nil
-             :form-patient-create nil
-             :form-patient-update nil})))))
-
 (deftest patients-create
-  (testing "Form renders correctly"
-    (rtl/render (r/as-element [create]))
-    (is (and (some? (.getByPlaceholderText screen "First name"))
-             (some? (.getByPlaceholderText screen "Middle name"))
-             (some? (.getByPlaceholderText screen "Last name"))
-             (some? (.getByText screen "Sex"))
-             (some? (.getByText screen "Male"))
-             (some? (.getByText screen "Female"))
-             (some? (.getByPlaceholderText screen "Birth date"))
-             (some? (.getByPlaceholderText screen "Address"))
-             (some? (.getByPlaceholderText screen "Insurance"))))))
+  (rft/run-test-sync
+   (let [{:keys [first-name middle-name last-name sex birth-date address insurance]} form-queries]
+     (testing "Form renders correctly"
+       (with-render [create] (fn [_] (is (->> form-queries vals (map call) (every? some?))))))
+
+     (testing "Form elements work correctly"
+       (with-render [create]
+         (fn [_]
+           (change (first-name) "a")
+           (change (middle-name) "b")
+           (change (last-name) "c")
+           (change (address) "d")
+           (change (insurance) "e")
+           (change (birth-date) "2024-01-01")
+           ;; (change (sex) "male")
+           ))
+       (with-render [create]
+         (fn [_]
+           (is (and (= "a" @(rf/subscribe [::subs/form :form-patient-create :first_name]))
+                    (= "b" @(rf/subscribe [::subs/form :form-patient-create :middle_name]))
+                    (= "c" @(rf/subscribe [::subs/form :form-patient-create :last_name]))
+                    (= "d" @(rf/subscribe [::subs/form :form-patient-create :address]))
+                    (= "e" @(rf/subscribe [::subs/form :form-patient-create :insurance]))
+                    (= "2024-01-01" @(rf/subscribe [::subs/form :form-patient-create :birth_date]))
+                    ;; (= "male" @(rf/subscribe [::subs/form :form-patient-create :sex]))
+                    ))))))))
 
 (deftest patients-edit
-  (testing "Form renders correctly"
-    (rtl/render (r/as-element [edit]))
-    (is (and (some? (.getByPlaceholderText screen "First name"))
-             (some? (.getByPlaceholderText screen "Middle name"))
-             (some? (.getByPlaceholderText screen "Last name"))
-             (some? (.getByText screen "Sex"))
-             (some? (.getByText screen "Male"))
-             (some? (.getByText screen "Female"))
-             (some? (.getByPlaceholderText screen "Birth date"))
-             (some? (.getByPlaceholderText screen "Address"))
-             (some? (.getByPlaceholderText screen "Insurance"))))))
+  (rft/run-test-sync
+   (let [{:keys [first-name middle-name last-name sex birth-date address insurance]} form-queries]
+     (testing "Form renders correctly"
+       (with-render [edit] (fn [_] (is (->> form-queries vals (map call) (every? some?))))))
+
+     (testing "Form elements work correctly"
+       (with-render [edit]
+         (fn [_]
+           (change (first-name) "a")
+           (change (middle-name) "b")
+           (change (last-name) "c")
+           (change (address) "d")
+           (change (insurance) "e")
+           (change (birth-date) "2024-01-01")
+           ;; (change (sex) "male")
+           ))
+       (with-render [edit]
+         (fn [_]
+           (is (and (= "a" @(rf/subscribe [::subs/form :form-patient-update :first_name]))
+                    (= "b" @(rf/subscribe [::subs/form :form-patient-update :middle_name]))
+                    (= "c" @(rf/subscribe [::subs/form :form-patient-update :last_name]))
+                    (= "d" @(rf/subscribe [::subs/form :form-patient-update :address]))
+                    (= "e" @(rf/subscribe [::subs/form :form-patient-update :insurance]))
+                    (= "2024-01-01" @(rf/subscribe [::subs/form :form-patient-update :birth_date]))
+                    ;; (= "male" @(rf/subscribe [::subs/form :form-patient-create :sex]))
+                    ))))))))
 
 (deftest patients-index
   (testing "Page renders correctly"

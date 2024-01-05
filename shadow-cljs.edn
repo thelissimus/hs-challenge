@@ -1,8 +1,4 @@
 {:lein true
- :source-paths
- ["src/challenge/frontend"
-  "src/challenge/common"
-  "test/challenge/frontend"]
 
  :dev-http
  {3000 "resources/public"
@@ -16,7 +12,7 @@
    :modules
    {:main {:init-fn challenge.frontend.core/init}}
    :devtools
-   {:preloads [day8.re-frame-10x.preload]}
+   {:preloads [day8.re-frame-10x.preload devtools.preload]}
    :dev
    {:compiler-options
     {:closure-defines
@@ -30,6 +26,7 @@
 
   :test
   {:target :browser-test
+   :devtools {:preloads [devtools.preload]}
    :test-dir "resources/public/assets/js/test"}
 
   :ci

@@ -6,20 +6,7 @@
    [challenge.frontend.env :refer [config]]
    [challenge.frontend.lib :refer [clj->json]]))
 
-;;; state
-
-(reframe/reg-event-db
- ::init-db
- (fn [_ _]
-   {:current-route nil
-    :patients-list []
-    :patients-query nil
-    :patient-current nil
-    :form-patient-create nil
-    :form-patient-update nil}))
-
-;;; routing
-
+;;; Routing
 (reframe/reg-event-db
  ::navigated
  (fn [db [_ newm]]
@@ -27,15 +14,13 @@
          cs   (apply-controllers (:controllers oldm) newm)]
      (assoc db :current-route (assoc newm :controllers cs)))))
 
-;;; form utils
-
+;;; Form utils
 (reframe/reg-event-db
  ::update-form
  (fn [db [_ form key val]]
    (assoc-in db [form key] val)))
 
-;;; patients
-
+;;; Patients
 ;; GET patients/
 (reframe/reg-event-db
  ::fetch-patients-list-ok
