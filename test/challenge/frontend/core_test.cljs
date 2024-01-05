@@ -54,6 +54,18 @@
    :address    #(.getByPlaceholderText % "Address")
    :insurance  #(.getByPlaceholderText % "Insurance")})
 
+;;; Fixtures
+(defn create-app-element [tests]
+  (.appendChild (.-body js/document)
+                (doto (.createElement js/document "div")
+                  (.setAttribute "id" "app")
+                  (.setAttribute "style" "display:none;")))
+  (setup-router)
+  (tests))
+
+(use-fixtures :once create-app-element)
+(use-fixtures :each (fn [test] (test) (rtl/cleanup)))
+
 ;;; Tests
 (deftest init
   (testing "Renders correctly"
@@ -137,14 +149,3 @@
                            :address ""
                            :insurance ""}}])
      (with-render [show] (fn [_] (is (->> thead-queries vals (map #(% screen)) (every? some?))))))))
-
-(defn create-app-element [tests]
-  (.appendChild (.-body js/document)
-                (doto (.createElement js/document "div")
-                  (.setAttribute "id" "app")
-                  (.setAttribute "style" "display:none;")))
-  (setup-router)
-  (tests))
-
-(use-fixtures :once create-app-element)
-(use-fixtures :each (fn [test] (test) (rtl/cleanup)))
