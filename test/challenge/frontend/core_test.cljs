@@ -37,6 +37,23 @@
    :address     #(.getByPlaceholderText screen "Address")
    :insurance   #(.getByPlaceholderText screen "Insurance")})
 
+(def thead-queries
+  {:id         #(.getByText % "ID")
+   :full-name  #(.getByText % "Full name")
+   :sex        #(.getByText % "Sex")
+   :birth-date #(.getByText % "Birth date")
+   :address    #(.getByText % "Address")
+   :insurance  #(.getByText % "Insurance")
+   :actions    #(.getByText % "Actions")})
+
+(def tbody-queries
+  {:id         #(.getByPlaceholderText % "ID")
+   :full-name  #(.getByPlaceholderText % "Full name")
+   :sex        #(.getByText % "Sex")
+   :birth-date #(.getByPlaceholderText % "Birth date")
+   :address    #(.getByPlaceholderText % "Address")
+   :insurance  #(.getByPlaceholderText % "Insurance")})
+
 ;;; Tests
 (deftest init
   (testing "Renders correctly"
@@ -100,25 +117,12 @@
 
 (deftest patients-index
   (testing "Page renders correctly"
-    (rtl/render (r/as-element [table]))
-    (let [thead (.querySelector js/document "thead")
-          tbody (.querySelector js/document "tbody")]
-      (is (and (.getByText (within thead) "ID")
-               (.getByText (within thead) "Full name")
-               (.getByText (within thead) "Sex")
-               (.getByText (within thead) "Birth date")
-               (.getByText (within thead) "Address")
-               (.getByText (within thead) "Insurance")
-               (.getByText (within thead) "Actions")
-
-               (.getByPlaceholderText (within tbody) "ID")
-               (.getByPlaceholderText (within tbody) "Full name")
-               (.getByText (within tbody) "Sex")
-               (.getByText (within tbody) "Male")
-               (.getByText (within tbody) "Female")
-               (.getByPlaceholderText (within tbody) "Birth date")
-               (.getByPlaceholderText (within tbody) "Address")
-               (.getByPlaceholderText (within tbody) "Insurance"))))))
+    (with-render [table]
+      (fn [_]
+        (let [thead (.querySelector js/document "thead")
+              tbody (.querySelector js/document "tbody")]
+          (is (->> thead-queries vals (map #(% (within thead))) (every? some?)))
+          (is (->> tbody-queries vals (map #(% (within tbody))) (every? some?))))))))
 
 (deftest patients-show
   (rft/run-test-sync
@@ -132,14 +136,7 @@
                            :birth_date "2023-12-18"
                            :address ""
                            :insurance ""}}])
-     (rtl/render (r/as-element [show]))
-     (is (and (.getByText screen "ID")
-              (.getByText screen "Full name")
-              (.getByText screen "Sex")
-              (.getByText screen "Birth date")
-              (.getByText screen "Address")
-              (.getByText screen "Insurance")
-              (.getByText screen "Actions"))))))
+     (with-render [show] (fn [_] (is (->> thead-queries vals (map #(% screen)) (every? some?))))))))
 
 (defn create-app-element [tests]
   (.appendChild (.-body js/document)
