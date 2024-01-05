@@ -6,9 +6,9 @@ on:
     paths:
       - "resources/config/frontend.edn"
       - "resources/public/**"
-      - "src/frontend/**"
-      - "src/common/**"
-      - "test/frontend/**"
+      - "src/challenge/frontend/**"
+      - "src/challenge/common/**"
+      - "test/challenge/frontend/**"
       - "Dockerfile.frontend"
       - "project.clj"
       - "shadow-cljs.clj"

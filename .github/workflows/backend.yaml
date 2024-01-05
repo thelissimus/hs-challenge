@@ -6,9 +6,9 @@ on:
     paths:
       - "resources/config/backend.edn"
       - "resources/schema/**"
-      - "src/backend/**"
-      - "src/common/**"
-      - "test/backend/**"
+      - "src/challenge/backend/**"
+      - "src/challenge/common/**"
+      - "test/challenge/backend/**"
       - "Dockerfile.backend"
       - "project.clj"
 
