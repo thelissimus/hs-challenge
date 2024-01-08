@@ -17,12 +17,13 @@
                 (merge attrs))]])
 
 (defn select-view [key form placeholder options attrs]
-  [:select (merge {:name      key
-                   :value     (or @(reframe/subscribe [::subs/form form key]) js/undefined)
-                   :on-change #(reframe/dispatch [::events/update-form
+  [:select (merge {:name         key
+                   :defaultValue ""
+                   :value        (or @(reframe/subscribe [::subs/form form key]) js/undefined)
+                   :on-change    #(reframe/dispatch [::events/update-form
                                                   form
                                                   key
                                                   (-> % .-target .-value)])} attrs)
-   [:option {:selected "selected" :disabled true :hidden true} placeholder]
+   [:option {:value "" :disabled true :hidden true} placeholder]
    (for [{:keys [value label]} options]
      [:option {:key value :value value} label])])
