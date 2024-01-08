@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hs-challenge
+spec:
+  destination:
+    name: ""
+    namespace: prod
+    server: "https://kubernetes.default.svc"
+  source:
+    path: ./k8s/
+    repoURL: "https://github.com/thelissimus/hs-challenge"
+    targetRevision: HEAD
+  sources: []
+  project: default
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+    syncOptions: []
